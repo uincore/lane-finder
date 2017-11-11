@@ -1,4 +1,8 @@
-#VS Code files
+# VS Code files
 \.vscode
-#PyCharm files
+
+# PyCharm files
+\.idea
+
+# python cache
 \__pycache__
