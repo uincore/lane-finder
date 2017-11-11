@@ -28,8 +28,8 @@ class ImageOperations:
         return masked_image
 
     # color and gradient threshold
-    def highlight_lane_lines(self, rgb_image):
+    def apply_color_and_gradient_threshold(self, rgb_image):
         return rgb_image
 
-    def perspective_transform(self, gray_image):
+    def apply_perspective_transform(self, gray_image):
         return gray_image
