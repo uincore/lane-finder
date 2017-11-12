@@ -14,14 +14,14 @@ class ImageOperations:
         self.gradient_x_threshold_max = 100
 
     @staticmethod
-    def _filter(image_gray, threshold_min, threshold_max):
-        binary = np.zeros_like(image_gray)
-        binary[(image_gray >= threshold_min) & (image_gray <= threshold_max)] = 1
+    def _filter(gray_image, threshold_min, threshold_max):
+        binary = np.zeros_like(gray_image)
+        binary[(gray_image >= threshold_min) & (gray_image <= threshold_max)] = 1
         return binary
 
     @staticmethod
-    def _get_gradient_x(image_gray):
-        gradient_x = cv2.Sobel(image_gray, cv2.CV_64F, 1, 0)
+    def _get_gradient_x(gray_image):
+        gradient_x = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0)
         abs_gradient_x = np.absolute(gradient_x)
         return np.uint8(255 * abs_gradient_x / np.max(abs_gradient_x))
 
@@ -47,16 +47,16 @@ class ImageOperations:
     def apply_color_and_gradient_threshold(self, bgr_image):
         image_hls = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HLS)
         s_channel = image_hls[:, :, 2]
-        s_channel_binary = self._filter(s_channel, self.s_channel_threshold_min, self.s_channel_threshold_max)
+        s_channel_bw = self._filter(s_channel, self.s_channel_threshold_min, self.s_channel_threshold_max)
 
         image_gray = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
         gradient_x = self._get_gradient_x(image_gray)
-        gradient_x_binary = self._filter(gradient_x, self.gradient_x_threshold_min, self.gradient_x_threshold_max)
+        gradient_x_bw = self._filter(gradient_x, self.gradient_x_threshold_min, self.gradient_x_threshold_max)
 
-        combined_binary = np.zeros_like(s_channel_binary)
-        combined_binary[(s_channel_binary == 1) | (gradient_x_binary == 1)] = 1
+        combined_bw_image = np.zeros_like(s_channel_bw)
+        combined_bw_image[(s_channel_bw == 1) | (gradient_x_bw == 1)] = 1
 
-        return combined_binary
+        return combined_bw_image
 
     def apply_perspective_transform(self, gray_image):
         return gray_image
