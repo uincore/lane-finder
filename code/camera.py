@@ -23,6 +23,10 @@ class Camera:
         image_size = (image.shape[1], image.shape[0])
         assert image_size == self.camera_image_size, "Can't process image taken by different camera. "+details_message
 
+    @property
+    def image_size(self):
+        return self.camera_image_size
+
     def load_calibration_images(self, nx=9, ny=6, path_pattern="../input/camera_calibration/calibration*.jpg"):
         image_paths = glob.glob(path_pattern)
 

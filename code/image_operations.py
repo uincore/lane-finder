@@ -4,7 +4,7 @@ import cv2
 
 class ImageOperations:
 
-    def __init__(self):
+    def __init__(self, image_size):
         self._ignore_mask_color = (255, 255, 255)
 
         self.s_channel_threshold_min = 170
@@ -12,6 +12,32 @@ class ImageOperations:
 
         self.gradient_x_threshold_min = 20
         self.gradient_x_threshold_max = 100
+
+        image_width, image_height = image_size
+        self.src = self._get_source_points(image_width, image_height)
+        self.dst = self._get_destination_points(image_width)
+
+    @staticmethod
+    def _get_source_points(image_width, image_height):
+        tan_left_line_angle = 200 / 286
+        max_distance = 270
+        perspective_difference = max_distance // tan_left_line_angle
+
+        src_points = [[0, image_height],
+                      [0, image_height - max_distance],
+                      [image_width - perspective_difference, image_height - max_distance],
+                      [image_width, image_height]]
+
+        return np.float32(src_points)
+
+    @staticmethod
+    def _get_destination_points(dst_image_side):
+        dst_points = [[0, dst_image_side],
+                      [0, 0],
+                      [dst_image_side, 0],
+                      [dst_image_side, dst_image_side]]
+
+        return np.float32(dst_points)
 
     @staticmethod
     def _filter(gray_image, threshold_min, threshold_max):
@@ -43,14 +69,13 @@ class ImageOperations:
         masked_image = cv2.bitwise_and(image, mask)
         return masked_image
 
-    # color and gradient threshold
     def apply_color_and_gradient_threshold(self, bgr_image):
         image_hls = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HLS)
         s_channel = image_hls[:, :, 2]
         s_channel_bw = self._filter(s_channel, self.s_channel_threshold_min, self.s_channel_threshold_max)
 
-        image_gray = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
-        gradient_x = self._get_gradient_x(image_gray)
+        gray_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
+        gradient_x = self._get_gradient_x(gray_image)
         gradient_x_bw = self._filter(gradient_x, self.gradient_x_threshold_min, self.gradient_x_threshold_max)
 
         combined_bw_image = np.zeros_like(s_channel_bw)
@@ -58,5 +83,8 @@ class ImageOperations:
 
         return combined_bw_image
 
-    def apply_perspective_transform(self, gray_image):
-        return gray_image
+    def apply_perspective_transform(self, image):
+        M = cv2.getPerspectiveTransform(self.src, self.dst)
+        shape = (1280, 1280)
+        warped = cv2.warpPerspective(image, M, shape, flags=cv2.INTER_LINEAR)
+        return warped

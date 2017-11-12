@@ -11,7 +11,7 @@ camera = Camera()
 camera.load_calibration_images()
 camera.calibrate()
 
-image_operations = ImageOperations()
+image_operations = ImageOperations(camera.image_size)
 image_processor = ImageProcessor(camera, image_operations)
 lane_detector = LaneDetector(image_processor)
 
