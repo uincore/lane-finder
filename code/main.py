@@ -8,6 +8,7 @@ image1 = "../input/images/test6.jpg"
 video1 = "../input/project_video.mp4"
 
 camera = Camera()
+camera.load_calibration_images()
 camera.calibrate()
 
 image_operations = ImageOperations()
