@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import cv2
 import numpy as np
 
@@ -34,11 +33,9 @@ class LaneDetector:
         def convert(image):
             return image[..., [2, 1, 0]]
 
-        rgb_image = mpimg.imread(image_path)
-
-        bgr_frame = convert(rgb_image)
+        bgr_frame = cv2.imread(image_path)
         frame = self.image_processor.process_frame(bgr_frame)
-        rgb_frame = convert(frame)
 
+        rgb_frame = convert(frame)
         plt.imshow(rgb_frame)
         plt.show()
