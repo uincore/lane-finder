@@ -5,12 +5,14 @@ import cv2
 
 class Camera:
 
-    def __init__(self):
+    def __init__(self, image_width, image_height):
         self.object_points = []
         self.image_points = []
-        self.camera_image_size = None
+        self.width = image_width
+        self.height = image_height
         self.camera_matrix = None
         self.dist_coefficients = None
+        self.handled_images = {}
 
     @staticmethod
     def _get_object_points(nx, ny):
@@ -20,24 +22,32 @@ class Camera:
         return obj_p
 
     def _validate_image(self, image, details_message=""):
-        image_size = (image.shape[1], image.shape[0])
-        assert image_size == self.camera_image_size, "Can't process image taken by different camera. "+details_message
+        assert image.shape[1] == self.width and image.shape[0] == self.height, \
+            "Can't process image taken by different camera. " + details_message
 
     @property
-    def image_size(self):
-        return self.camera_image_size
+    def image_width(self):
+        return self.width
 
-    def load_calibration_images(self, nx=9, ny=6, path_pattern="../input/camera_calibration/calibration*.jpg"):
+    @property
+    def image_height(self):
+        return self.height
+
+    @property
+    def perspective_distance(self):
+        return 300
+
+    def load_calibration_images(self, nx, ny, path_pattern):
         image_paths = glob.glob(path_pattern)
 
         obj_p = self._get_object_points(nx, ny)
 
         for image_path in image_paths:
+            if image_path in self.handled_images:
+                continue
+
             image_bgr = cv2.imread(image_path)
             image_gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
-
-            if self.camera_image_size is None:
-                self.camera_image_size = image_gray.shape[::-1]
 
             self._validate_image(image_bgr, image_path)
 
@@ -46,12 +56,13 @@ class Camera:
             if patternWasFound is True:
                 self.object_points.append(obj_p)
                 self.image_points.append(corners)
+                self.handled_images[image_path] = True
             else:
                 print("Image [{}] has intersection pattern different from {}x{} and will be skipped"
                       .format(image_path, nx, ny))
 
     def calibrate(self):
-        result = cv2.calibrateCamera(self.object_points, self.image_points, self.camera_image_size,
+        result = cv2.calibrateCamera(self.object_points, self.image_points, (self.width, self.height),
                                      self.camera_matrix, self.dist_coefficients)
 
         retval, self.camera_matrix, self.dist_coefficients, rvecs, tvecs = result

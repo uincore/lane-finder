@@ -4,24 +4,23 @@ import matplotlib.pyplot as plt
 
 class ImageProcessor:
 
-    def __init__(self, camera, image_operations):
+    def __init__(self, camera, threshold, perspective_transform):
         self.camera = camera
-        self.image_operations = image_operations
+        self.threshold = threshold
+        self.perspective_transform = perspective_transform
 
     def process_frame(self, bgr_frame):
 
         undistorted_image = self.camera.undistort(bgr_frame)
 
-        #bgr_frame_masked = self.image_operations.apply_detection_area(undistorted_image)
-        i = self.image_operations.apply_color_and_gradient_threshold(undistorted_image)
-        #i1 = self.image_operations.apply_perspective_transform(i)
+        bw_image_filtered = self.threshold.apply(undistorted_image)
+        bw_bird_view = self.perspective_transform.apply(bw_image_filtered, to_bird_view=True)
 
         # lane detection
         # undo perspective transformation for detected lane
+        #i2 = self.perspective_transform.apply(i, to_bird_view=False)
         # initial frame and detection area merge
         # some text info on output image
 
-        #plt.imshow(i, cmap="gray")
-        #plt.show()
 
         return bgr_frame
