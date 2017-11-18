@@ -3,6 +3,7 @@ from lane_detector import LaneDetector
 from camera import Camera
 from image_operations.threshold import ColorAndGradientThresholdOperation
 from image_operations.perspective_transformation import PerspectiveTransformationOperation
+from image_operations.drawing.draw_lane import DrawLaneOperation
 
 
 image0 = "../input/images/test6.jpg"
@@ -17,8 +18,10 @@ camera.calibrate()
 
 threshold = ColorAndGradientThresholdOperation()
 perspective_transform = PerspectiveTransformationOperation(camera.width, camera.height, camera.perspective_distance)
-image_processor = ImageProcessor(camera, threshold, perspective_transform)
+draw_line = DrawLaneOperation(1280, 720)
+image_processor = ImageProcessor(camera, threshold, perspective_transform, draw_line)
+
 lane_detector = LaneDetector(image_processor)
 
-lane_detector.detect_on_image(image2)
-#lane_detector.detect_on_video(video0)
+lane_detector.detect_on_image(image0)
+# lane_detector.detect_on_video(video0)

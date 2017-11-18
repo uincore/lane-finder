@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
 
 
 class PerspectiveTransformationOperation:
@@ -42,7 +41,7 @@ class PerspectiveTransformationOperation:
 
         return np.float32(dst_points)
 
-    def apply(self, image, to_bird_view=True):
+    def execute(self, image, to_bird_view=True):
         M = self.M_forward if to_bird_view else self.M_back
 
         return cv2.warpPerspective(image, M, self.image_size, flags=cv2.INTER_LINEAR)

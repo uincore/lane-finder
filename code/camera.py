@@ -14,17 +14,6 @@ class Camera:
         self.dist_coefficients = None
         self.handled_images = {}
 
-    @staticmethod
-    def _get_object_points(nx, ny):
-        obj_p = np.zeros((nx * ny, 3), np.float32)
-        obj_p[:, :2] = np.mgrid[0:nx, 0:ny].T.reshape(-1, 2)
-
-        return obj_p
-
-    def _validate_image(self, image, details_message=""):
-        assert image.shape[1] == self.width and image.shape[0] == self.height, \
-            "Can't process image taken by different camera. " + details_message
-
     @property
     def image_width(self):
         return self.width
@@ -70,3 +59,14 @@ class Camera:
     def undistort(self, image):
         self._validate_image(image)
         return cv2.undistort(image, self.camera_matrix, self.dist_coefficients, None, self.camera_matrix)
+
+    @staticmethod
+    def _get_object_points(nx, ny):
+        obj_p = np.zeros((nx * ny, 3), np.float32)
+        obj_p[:, :2] = np.mgrid[0:nx, 0:ny].T.reshape(-1, 2)
+
+        return obj_p
+
+    def _validate_image(self, image, details_message=""):
+        assert image.shape[1] == self.width and image.shape[0] == self.height, \
+            "Can't process image taken by different camera. " + details_message

@@ -1,6 +1,14 @@
 import cv2
-from image_operations import ImageOperations
+import numpy as np
+import matplotlib.pyplot as plt
+from image_operations.draw_lane import DrawLaneOperation
 
-bgr_frame = cv2.imread("../input/images/test6.jpg")
-o = ImageOperations()
-o.apply_detection_area(bgr_frame)
+d = DrawLaneOperation(1280, 720)
+bgr_frame = cv2.imread("./bird_view.png")
+gray = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2GRAY)
+binary = np.zeros_like(gray)
+binary[gray == 255] = 1
+r = d.execute(binary)
+
+plt.imshow(r, cmap="gray")
+plt.show()

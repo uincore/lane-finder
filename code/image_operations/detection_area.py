@@ -7,7 +7,7 @@ class DetectionAreaOperation:
     def __init__(self, image_size):
         self._ignore_mask_color = (255, 255, 255)
 
-    def apply(self, image, width_adjustment=60, height_adjustment=65):
+    def execute(self, image, width_adjustment=60, height_adjustment=65):
         im_height, im_width = image.shape[0], image.shape[1]
         im_half_height, im_half_width = im_height // 2, im_width // 2
 
