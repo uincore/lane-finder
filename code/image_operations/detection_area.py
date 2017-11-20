@@ -4,7 +4,7 @@ import cv2
 
 class DetectionAreaOperation:
 
-    def __init__(self, image_size):
+    def __init__(self):
         self._ignore_mask_color = (255, 255, 255)
 
     def execute(self, image, width_adjustment=60, height_adjustment=65):

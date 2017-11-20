@@ -22,7 +22,7 @@ class LaneImageFactory:
         polynomial_coefficients = np.polyfit(y_coordinates, x_coordinates, self.deg)
 
         plot_x = self.polynomial(polynomial_coefficients, plot_y)
-        return plot_x.astype(int)
+        return plot_x
 
     def create(self, left_line_points, right_line_points):
         plot_x_left = self._calculate_plot_x(left_line_points, self.plot_y_left)
