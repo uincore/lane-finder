@@ -3,7 +3,10 @@ from lane_detector import LaneDetector
 from camera import Camera
 from image_operations.threshold import ColorAndGradientThresholdOperation
 from image_operations.perspective_transformation import PerspectiveTransformationOperation
-from image_operations.drawing.draw_lane import DrawLaneOperation
+from lane.lane import Lane
+from line_factory.sliding_window import SlidingWindowsContainer
+from line_factory.sliding_window_line_factory import SlidingWindowLineFactory
+from line_factory.line_coordinates_factory import CurvedLineCoordinatesFactory
 
 
 image0 = "../input/images/test6.jpg"
@@ -15,13 +18,18 @@ video2 = "../input/harder_challenge_video.mp4"
 
 camera = Camera(1280, 720)
 camera.load_calibration_images(nx=9, ny=6, path_pattern="../input/camera_calibration/calibration*.jpg")
-camera.load_calibration_images(nx=9, ny=5, path_pattern="../input/camera_calibration/calibration*.jpg")
 camera.calibrate()
 
 threshold = ColorAndGradientThresholdOperation()
 perspective_transform = PerspectiveTransformationOperation(camera.width, camera.height, camera.perspective_distance)
-draw_line = DrawLaneOperation(1280, 720)
-image_processor = ImageProcessor(camera, threshold, perspective_transform, draw_line)
+# draw_line = DrawLaneOperation(1280, 720)
+
+sliding_window_container = SlidingWindowsContainer(720)
+line_coordinates_factory = CurvedLineCoordinatesFactory(1280, 720)
+line_factory = SlidingWindowLineFactory(sliding_window_container.windows, line_coordinates_factory)
+lane = Lane(line_factory)
+
+image_processor = ImageProcessor(camera, threshold, perspective_transform, lane)
 
 lane_detector = LaneDetector(image_processor)
 
