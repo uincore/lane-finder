@@ -20,4 +20,4 @@ class CurvedLineCoordinatesFactory:
         polynomial_coefficients = np.polyfit(y_coordinates, x_coordinates, self.deg)
 
         plot_x = self.polynomial(polynomial_coefficients, self.plot_y)
-        return np.stack([plot_x, self.plot_y]).T
+        return np.stack([plot_x, self.plot_y]).T, (plot_x, self.plot_y)

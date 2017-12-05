@@ -5,7 +5,6 @@ class Frame:
 
     def __init__(self, bw_image):
         nonzero_y, nonzero_x = bw_image.nonzero()
-        self.bw_image = bw_image
         self.nonzero_x = np.array(nonzero_x)
         self.nonzero_y = np.array(nonzero_y)
 
