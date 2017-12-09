@@ -3,7 +3,7 @@ from line_factory.frame import Frame
 from line_factory.detection_area import DetectionArea
 
 
-class SlidingWindowLineFactory:
+class SlidingWindowLineDetector:
 
     def __init__(self, sliding_windows, line_coordinates_factory):
         self.sliding_windows = sliding_windows

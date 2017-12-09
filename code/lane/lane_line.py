@@ -1,5 +1,4 @@
 import numpy as np
-# import matplotlib.pyplot as plt
 from lane.drawing import Drawing
 
 
@@ -9,21 +8,32 @@ class LaneLine:
         self.start_x = start_x
         self.line_factory = line_factory
         self.detection_area_mask = None
+        self.line_points = None
 
-    def detect(self, bw_image):
+    @property
+    def line(self):
+        return self.line_points
 
+    def update(self, bw_image):
+        image = self._apply_line_detection_area_mask(bw_image)
+        line = self.line_factory.get_line(image, self.start_x)
+        self.detection_area_mask = self._create_line_detection_area_mask(line, image.shape)
+
+        self.start_x = int(line[700][0])
+        self.line_points = line;
+
+    def _apply_line_detection_area_mask(self, bw_image):
         image = np.copy(bw_image)
         if self.detection_area_mask is not None:
             image[self.detection_area_mask == 0] = 0
 
-        current_line, _ = self.line_factory.get_line(image, self.start_x)
+        return image
 
-        line_points_count = len(current_line)
+    @staticmethod
+    def _create_line_detection_area_mask(line, image_shape):
+        line_points_count = len(line)
         delta = [[100, 0]] * line_points_count
-        left_b = current_line - delta
-        right_b = current_line + delta
+        left_b = line - delta
+        right_b = line + delta
 
-        self.detection_area_mask = Drawing.create_mask_image(image.shape, left_b, right_b, 1)
-        self.start_x = int(current_line[700][0])
-
-        return current_line
+        return Drawing.create_mask_image(image_shape, left_b, right_b, 1)

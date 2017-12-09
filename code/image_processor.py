@@ -15,9 +15,10 @@ class ImageProcessor:
 
         bw_image_filtered = self.threshold.execute(undistorted_image)
         bw_bird_view = self.perspective_transform.execute(bw_image_filtered, to_bird_view=True)
-        lane_bird_view = self.lane.draw(bw_bird_view)
-        lane = self.perspective_transform.execute(lane_bird_view, to_bird_view=False)
-        result_image = cv2.addWeighted(lane, 0.9, bgr_frame, 1, 0)
+        lane_mask_bird_view = self.lane.create_mask_image(bw_bird_view)
+        lane_mask = self.perspective_transform.execute(lane_mask_bird_view, to_bird_view=False)
+
+        result_image = cv2.addWeighted(lane_mask, 0.9, bgr_frame, 1, 0)
 
         # some text info on output image
         return result_image

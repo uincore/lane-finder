@@ -5,7 +5,7 @@ from image_operations.threshold import ColorAndGradientThresholdOperation
 from image_operations.perspective_transformation import PerspectiveTransformationOperation
 from lane.lane import Lane
 from line_factory.sliding_window import SlidingWindowsContainer
-from line_factory.sliding_window_line_factory import SlidingWindowLineFactory
+from line_factory.sliding_window_line_detector import SlidingWindowLineDetector
 from line_factory.line_coordinates_factory import CurvedLineCoordinatesFactory
 
 
@@ -22,11 +22,10 @@ camera.calibrate()
 
 threshold = ColorAndGradientThresholdOperation()
 perspective_transform = PerspectiveTransformationOperation(camera.width, camera.height, camera.perspective_distance)
-# draw_line = DrawLaneOperation(1280, 720)
 
 sliding_window_container = SlidingWindowsContainer(720)
 line_coordinates_factory = CurvedLineCoordinatesFactory(1280, 720)
-line_factory = SlidingWindowLineFactory(sliding_window_container.windows, line_coordinates_factory)
+line_factory = SlidingWindowLineDetector(sliding_window_container.windows, line_coordinates_factory)
 lane = Lane(line_factory)
 
 image_processor = ImageProcessor(camera, threshold, perspective_transform, lane)

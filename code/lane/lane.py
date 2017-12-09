@@ -1,5 +1,4 @@
 import numpy as np
-import cv2
 from lane.lane_line import LaneLine
 from lane.drawing import Drawing
 
@@ -10,28 +9,31 @@ class Lane:
         self.left_line = None
         self.right_line = None
 
-        self.lane_width = 0
-        self.curvature = 0
-        self.lane_center_distance = 0
-
         self.line_factory = line_factory
         self.lane_mask_color = (0, 255, 0)
+
+    @property
+    def line_left(self):
+        return self.left_line
+
+    @property
+    def line_right(self):
+        return self.right_line
 
     def _initialize(self, bw_image):
         left_line_x, right_line_x = self._get_lane_lines_start_points(bw_image)
         self.left_line = LaneLine(left_line_x, self.line_factory)
         self.right_line = LaneLine(right_line_x, self.line_factory)
 
-    def draw(self, bw_image):
+    def create_mask_image(self, bw_image):
         if self.left_line is None and self.right_line is None:
             self._initialize(bw_image)
 
-        left_line = self.left_line.detect(bw_image)
-        right_line = self.right_line.detect(bw_image)
+        self.left_line.update(bw_image)
+        self.right_line.update(bw_image)
 
         output_shape = (bw_image.shape[0], bw_image.shape[1], 3)
-
-        return Drawing.create_mask_image(output_shape, left_line, right_line, self.lane_mask_color)
+        return Drawing.create_mask_image(output_shape, self.left_line.line, self.right_line.line, self.lane_mask_color)
 
     @staticmethod
     def _get_lane_lines_start_points(bw_image):
