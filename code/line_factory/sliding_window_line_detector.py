@@ -5,11 +5,10 @@ from line_factory.detection_area import DetectionArea
 
 class SlidingWindowLineDetector:
 
-    def __init__(self, sliding_windows, line_coordinates_factory):
+    def __init__(self, sliding_windows):
         self.sliding_windows = sliding_windows
-        self.line_coordinates_factory = line_coordinates_factory
 
-    def get_line(self, bw_image, start_x):
+    def detect(self, bw_image, start_x):
         frame = Frame(bw_image)
         current_x = start_x
         line_pieces = []
@@ -18,6 +17,7 @@ class SlidingWindowLineDetector:
             detection_boundaries = window.detection_area(current_x)
             line_points = frame.get_line_points(detection_boundaries)
             detection_area = DetectionArea(current_x, line_points)
+            current_x = detection_area.center_x
             line_pieces.append(detection_area)
 
         y = []
@@ -28,4 +28,4 @@ class SlidingWindowLineDetector:
             x.extend(line_piece.x)
 
         line_points = np.array(y), np.array(x)
-        return self.line_coordinates_factory.create(line_points)
+        return line_points

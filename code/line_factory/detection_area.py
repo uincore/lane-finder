@@ -12,12 +12,9 @@ class DetectionArea:
 
     def _get_new_x(self):
         if self.x_count > self.pixels_threshold:
-           return np.int(np.mean(self.x))
-        return self.start_x
+            return np.int(np.mean(self.x))
 
-    @property
-    def points_count(self):
-        return self.x_count
+        return self.start_x
 
     @property
     def line_points_x(self):
@@ -28,8 +25,5 @@ class DetectionArea:
         return self.y
 
     @property
-    def previous_x(self):
-        return self.start_x
-
-    def current_x(self):
+    def center_x(self):
         return self.new_x

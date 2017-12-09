@@ -5,11 +5,12 @@ from lane.drawing import Drawing
 
 class Lane:
 
-    def __init__(self, line_factory):
+    def __init__(self, line_detector, line_coordinates_factory):
         self.left_line = None
         self.right_line = None
 
-        self.line_factory = line_factory
+        self.line_detector = line_detector
+        self.line_coordinates_factory = line_coordinates_factory
         self.lane_mask_color = (0, 255, 0)
 
     @property
@@ -22,8 +23,8 @@ class Lane:
 
     def _initialize(self, bw_image):
         left_line_x, right_line_x = self._get_lane_lines_start_points(bw_image)
-        self.left_line = LaneLine(left_line_x, self.line_factory)
-        self.right_line = LaneLine(right_line_x, self.line_factory)
+        self.left_line = LaneLine(left_line_x, self.line_detector, self.line_coordinates_factory)
+        self.right_line = LaneLine(right_line_x, self.line_detector, self.line_coordinates_factory)
 
     def create_mask_image(self, bw_image):
         if self.left_line is None and self.right_line is None:

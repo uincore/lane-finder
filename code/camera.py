@@ -22,10 +22,6 @@ class Camera:
     def image_height(self):
         return self.height
 
-    @property
-    def perspective_distance(self):
-        return 300
-
     def load_calibration_images(self, nx, ny, path_pattern):
         image_paths = glob.glob(path_pattern)
 

@@ -18,7 +18,12 @@ class ImageProcessor:
         lane_mask_bird_view = self.lane.create_mask_image(bw_bird_view)
         lane_mask = self.perspective_transform.execute(lane_mask_bird_view, to_bird_view=False)
 
+        #TODO: add lane validation
+        #TODO: add image text details
+
         result_image = cv2.addWeighted(lane_mask, 0.9, bgr_frame, 1, 0)
+
+
 
         # some text info on output image
         return result_image

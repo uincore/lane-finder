@@ -4,23 +4,35 @@ from lane.drawing import Drawing
 
 class LaneLine:
 
-    def __init__(self, start_x, line_factory):
+    def __init__(self, start_x, line_detector, line_coordinates_factory):
         self.start_x = start_x
-        self.line_factory = line_factory
+        self.line_detector = line_detector
+        self.line_coordinates_factory = line_coordinates_factory
+
         self.detection_area_mask = None
-        self.line_points = None
+
+        self.line_detected = None
+        self.line_average = None
+
+    @property
+    def line_raw(self):
+        return self.line_detected
 
     @property
     def line(self):
-        return self.line_points
+        return self.line_average
 
     def update(self, bw_image):
         image = self._apply_line_detection_area_mask(bw_image)
-        line = self.line_factory.get_line(image, self.start_x)
+
+        line_raw = self.line_detector.detect(image, self.start_x)
+        line = self.line_coordinates_factory.create(line_raw)
+
         self.detection_area_mask = self._create_line_detection_area_mask(line, image.shape)
 
         self.start_x = int(line[700][0])
-        self.line_points = line;
+        self.line_detected = line_raw
+        self.line_average = line
 
     def _apply_line_detection_area_mask(self, bw_image):
         image = np.copy(bw_image)

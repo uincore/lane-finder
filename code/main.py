@@ -16,20 +16,24 @@ video0 = "../input/project_video.mp4"
 video1 = "../input/challenge_video.mp4"
 video2 = "../input/harder_challenge_video.mp4"
 
+# distance from image bottom to lane lines crossing in pixels, depends on camera position
+perspective_distance = 300
+
 camera = Camera(1280, 720)
 camera.load_calibration_images(nx=9, ny=6, path_pattern="../input/camera_calibration/calibration*.jpg")
 camera.calibrate()
 
 threshold = ColorAndGradientThresholdOperation()
-perspective_transform = PerspectiveTransformationOperation(camera.width, camera.height, camera.perspective_distance)
+perspective_transform = PerspectiveTransformationOperation(camera.width, camera.height, perspective_distance)
 
 sliding_window_container = SlidingWindowsContainer(720)
+line_detector = SlidingWindowLineDetector(sliding_window_container.windows)
+
 line_coordinates_factory = CurvedLineCoordinatesFactory(1280, 720)
-line_factory = SlidingWindowLineDetector(sliding_window_container.windows, line_coordinates_factory)
-lane = Lane(line_factory)
+
+lane = Lane(line_detector, line_coordinates_factory)
 
 image_processor = ImageProcessor(camera, threshold, perspective_transform, lane)
-
 lane_detector = LaneDetector(image_processor)
 
 # lane_detector.detect_on_image(image0)
