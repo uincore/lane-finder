@@ -1,3 +1,4 @@
+
 class SlidingWindow:
 
     def __init__(self, y_min, y_max, x_padding):

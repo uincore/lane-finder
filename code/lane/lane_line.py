@@ -4,35 +4,32 @@ from lane.drawing import Drawing
 
 class LaneLine:
 
-    def __init__(self, start_x, line_detector, line_coordinates_factory):
-        self.start_x = start_x
-        self.line_detector = line_detector
-        self.line_coordinates_factory = line_coordinates_factory
+    def __init__(self, start_x, curved_line_factory):
+        self.current_x = start_x
+        self.curved_line_factory = curved_line_factory
 
+        self.line = None
         self.detection_area_mask = None
 
-        self.line_detected = None
-        self.line_average = None
+    @property
+    def x(self):
+        return self.current_x
 
     @property
-    def line_raw(self):
-        return self.line_detected
+    def line_coordinates(self):
+        return self.line.coordinates
 
     @property
-    def line(self):
-        return self.line_average
+    def is_valid(self):
+        return self.line.is_valid
 
     def update(self, bw_image):
         image = self._apply_line_detection_area_mask(bw_image)
+        self.line = self.curved_line_factory.create(image, self.current_x)
 
-        line_raw = self.line_detector.detect(image, self.start_x)
-        line = self.line_coordinates_factory.create(line_raw)
-
-        self.detection_area_mask = self._create_line_detection_area_mask(line, image.shape)
-
-        self.start_x = int(line[700][0])
-        self.line_detected = line_raw
-        self.line_average = line
+        if self.line.is_valid:
+            self.current_x = int(self.line.line_coordinates[700][0])
+            self.detection_area_mask = self._create_line_detection_area_mask(self.line.coordinates, image.shape)
 
     def _apply_line_detection_area_mask(self, bw_image):
         image = np.copy(bw_image)

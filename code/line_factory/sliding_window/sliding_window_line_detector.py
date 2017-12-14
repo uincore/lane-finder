@@ -1,6 +1,5 @@
-import numpy as np
-from line_factory.frame import Frame
-from line_factory.detection_area import DetectionArea
+from line_factory.sliding_window.frame import Frame
+from line_factory.sliding_window.detection_area import DetectionArea
 
 
 class SlidingWindowLineDetector:
@@ -20,12 +19,4 @@ class SlidingWindowLineDetector:
             current_x = detection_area.center_x
             line_pieces.append(detection_area)
 
-        y = []
-        x = []
-
-        for line_piece in line_pieces:
-            y.extend(line_piece.y)
-            x.extend(line_piece.x)
-
-        line_points = np.array(y), np.array(x)
-        return line_points
+        return line_pieces

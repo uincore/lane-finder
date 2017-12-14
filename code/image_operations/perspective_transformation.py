@@ -4,8 +4,10 @@ import cv2
 
 class PerspectiveTransformationOperation:
 
-    def __init__(self, image_width, image_height, perspective_distance):
+    def __init__(self, image_width, image_height, perspective_distance, min_distance, max_distance):
         self.image_size = (image_width, image_height)
+        self.min_distance = min_distance
+        self.max_distance = max_distance
 
         self.perspective_distance = None
         self.transformation_parameters = None
@@ -15,9 +17,8 @@ class PerspectiveTransformationOperation:
         self.update_perspective_distance(perspective_distance)
 
     def _get_transform_parameters(self, image_size, perspective_distance):
-        max_distance = 250
 
-        src = self._get_source_points(image_size, perspective_distance, max_distance)
+        src = self._get_source_points(image_size, perspective_distance, self.min_distance, self.max_distance)
         dst = self._get_destination_points(image_size)
 
         M_forward = cv2.getPerspectiveTransform(src, dst)
@@ -26,15 +27,15 @@ class PerspectiveTransformationOperation:
         return M_forward, M_back
 
     @staticmethod
-    def _get_source_points(image_size, perspective_distance, max_distance):
+    def _get_source_points(image_size, perspective_distance, min_distance, max_distance):
         image_width, image_height = image_size
 
         perspective_difference = ((image_width / 2) / perspective_distance) * max_distance
 
-        src_points = [[0, image_height],
+        src_points = [[0, image_height - min_distance],
                       [perspective_difference, image_height - max_distance],
                       [image_width - perspective_difference, image_height - max_distance],
-                      [image_width, image_height]]
+                      [image_width, image_height - min_distance]]
 
         return np.float32(src_points)
 
