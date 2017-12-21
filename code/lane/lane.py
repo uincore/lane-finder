@@ -7,8 +7,8 @@ class Lane:
     def __init__(self, curved_line_factory):
         self.left_line = None
         self.right_line = None
-        self.lane_width = 0
-
+        self.bottom_lane_width = 0
+        self.top_lane_width = 0
         self.curved_line_factory = curved_line_factory
 
     @property
@@ -21,7 +21,11 @@ class Lane:
 
     @property
     def width(self):
-        return self.lane_width
+        return self.bottom_lane_width
+
+    @property
+    def top_width(self):
+        return self.top_lane_width
 
     def update(self, bw_image):
         if self.left_line is None and self.right_line is None:
@@ -30,16 +34,16 @@ class Lane:
         self.left_line.update(bw_image)
         self.right_line.update(bw_image)
 
-        self.lane_width = self._get_lane_width(self.left_line, self.right_line)
+        self._update_lane_width(self.left_line, self.right_line)
 
     def reset(self):
         self.left_line = None
         self.right_line = None
-        self.lane_width = 0
+        self.bottom_lane_width = 0
 
     def _initialize(self, bw_image):
         left_line_x, right_line_x = self._get_lane_lines_start_points(bw_image)
-        self.lane_width = right_line_x - left_line_x
+        self.bottom_lane_width = right_line_x - left_line_x
 
         self.left_line = LaneLine(left_line_x, self.curved_line_factory)
         self.right_line = LaneLine(right_line_x, self.curved_line_factory)
@@ -57,10 +61,14 @@ class Lane:
 
         return left_line_x, right_line_x
 
-    def _get_lane_width(self, left_line, right_line):
+    def _update_lane_width(self, left_line, right_line):
         if left_line.is_valid == right_line.is_valid is True:
-            return right_line.x - left_line.x
-        if left_line.is_valid != right_line.is_valid:
-            return self.lane_width
+            self.bottom_lane_width = right_line.x_bottom - left_line.x_bottom
+            self.top_lane_width = right_line.x_top - left_line.x_top
 
-        return 0
+        elif left_line.is_valid != right_line.is_valid:
+            self.top_lane_width = self.bottom_lane_width
+
+        else:
+            self.bottom_lane_width = 0
+            self.top_lane_width = 0

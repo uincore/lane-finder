@@ -20,9 +20,10 @@ video1 = "../input/challenge_video.mp4"
 video2 = "../input/harder_challenge_video.mp4"
 
 # distance from image bottom to lane lines crossing in pixels, depends on camera position
-perspective_distance = 300
+perspective_distance = 320
 min_distance = 40
 max_distance = 200
+width_deviation_tolerance = 20
 
 w, h = 1280, 720
 
@@ -41,10 +42,10 @@ sliding_window_line_detector = SlidingWindowLineDetector(sliding_window_containe
 curved_line_factory = CurvedLineFactory(sliding_window_line_detector, curved_line_coordinates_factory)
 
 lane = Lane(curved_line_factory)
-validator = LaneValidator(im_width=w, width_min_max=(600, 950), width_deviation_tolerance=15)
+validator = LaneValidator(im_width=w, width_min_max=(600, 950), width_deviation_tolerance=width_deviation_tolerance)
 
 image_processor = ImageProcessor(camera, color_threshold, perspective_transform, lane, validator, True)
 lane_detector = LaneDetector(image_processor)
 
-# lane_detector.detect_on_image(image0)
+# lane_detector.detect_on_image(image2)
 lane_detector.detect_on_video(video1)

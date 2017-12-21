@@ -23,6 +23,7 @@ class ImageProcessor:
         bw_image_filtered = self.threshold.execute(undistorted_image)
 
         bw_bird_view = self.perspective_transform.execute(bw_image_filtered, to_bird_view=True)
+        # return bw_bird_view
         self.lane.update(bw_bird_view)
 
         validation_result = self.lane_validator.validate(self.lane, self.allow_line_projection)
@@ -33,25 +34,26 @@ class ImageProcessor:
             texts = ["Lane lost"]
         else:
             left_line, right_line = self._get_lane_lines(self.lane, validation_result)
+            perspective_distance_adjust_direction = self.lane.top_width - self.lane.width
             texts = [
                 "Lane width: {}".format(self.lane.width),
                 "Left line detected: {}".format(validation_result.left_line_detected),
                 "Right line detected: {}".format(validation_result.right_line_detected),
                 "Car is on lane: {}".format(validation_result.car_is_on_lane),
                 "Left X: {:.0f}   Right X: {:.0f}".format(left_line[0][0], right_line[0][0]),
-                "Width deviation: {}".format(validation_result.width_deviation)
+                "Width deviation: {}".format(validation_result.width_deviation),
+                "Perspective distance: {}".format(self.perspective_transform.perspective_distance)
             ]
-            text = "\n".join(texts)
+
             lane_mask_bird_view = Drawing.create_mask_image(bgr_frame.shape, left_line, right_line, self.mask_color)
-
             lane_mask = self.perspective_transform.execute(lane_mask_bird_view, to_bird_view=False)
-
             result_image = cv2.addWeighted(lane_mask, 0.9, bgr_frame, 1, 0)
+
+            self.perspective_transform.adjust_perspective_distance(perspective_distance_adjust_direction)
 
             if not validation_result.car_is_on_lane:
                 self.lane.reset()
-        # TODO: add image text details
-        # some text info on output image
+
         self._add_text(result_image, texts)
         return result_image
 
@@ -61,7 +63,7 @@ class ImageProcessor:
         if validation_result.left_line_detected and validation_result.right_line_detected:
             return lane.line_left.coordinates, lane.line_right.coordinates
 
-        shift = [[lane.width, 0]] * 720
+        shift = [[lane.width, 0]] * self.camera.image_height
         if validation_result.left_line_detected:
             return lane.line_left.coordinates, lane.line_left.coordinates + shift
         if validation_result.right_line_detected:

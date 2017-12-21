@@ -5,15 +5,20 @@ from lane.drawing import Drawing
 class LaneLine:
 
     def __init__(self, start_x, curved_line_factory):
-        self.current_x = start_x
+        self.start_x = start_x
+        self.end_x = None
         self.curved_line_factory = curved_line_factory
 
         self.line = None
         self.detection_area_mask = None
 
     @property
-    def x(self):
-        return self.current_x
+    def x_bottom(self):
+        return self.start_x
+
+    @property
+    def x_top(self):
+        return self.end_x
 
     @property
     def coordinates(self):
@@ -25,10 +30,11 @@ class LaneLine:
 
     def update(self, bw_image):
         image = self._apply_line_detection_area_mask(bw_image)
-        self.line = self.curved_line_factory.create(image, self.current_x)
+        self.line = self.curved_line_factory.create(image, self.start_x)
 
         if self.line.is_valid:
-            self.current_x = int(self.line.coordinates[700][0])
+            self.start_x = int(self.line.coordinates[700][0])
+            self.end_x = int(self.line.coordinates[0][0])
             self.detection_area_mask = self._create_line_detection_area_mask(self.line.coordinates, image.shape)
 
     def _apply_line_detection_area_mask(self, bw_image):

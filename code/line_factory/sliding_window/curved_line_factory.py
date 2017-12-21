@@ -14,14 +14,9 @@ class CurvedLineFactory:
         raw_points = None
         coordinates = None
 
-        # try:
-        # except TypeError:
         if line_is_valid:
             raw_points = self._get_raw_line(detection_area_array)
             coordinates = self.line_coordinates_factory.create(raw_points)
-        # print(line_is_valid)
-        # for i in detection_area_array:
-        #     print("Detection area [{}]".format(i.line_points_x))
 
         return CurvedLine(line_image, line_is_valid, raw_points, coordinates)
 

@@ -9,17 +9,21 @@ class PerspectiveTransformationOperation:
         self.min_distance = min_distance
         self.max_distance = max_distance
 
-        self.perspective_distance = None
+        self.perspective_dist = perspective_distance
         self.transformation_parameters = None
         self.M_forward = None
         self.M_back = None
 
-        self.update_perspective_distance(perspective_distance)
+        self.adjust_perspective_distance()
 
-    def _get_transform_parameters(self, image_size, perspective_distance):
+    @property
+    def perspective_distance(self):
+        return self.perspective_dist
 
-        src = self._get_source_points(image_size, perspective_distance, self.min_distance, self.max_distance)
-        dst = self._get_destination_points(image_size)
+    def _get_transform_parameters(self, perspective_distance):
+
+        src = self._get_source_points(self.image_size, perspective_distance, self.min_distance, self.max_distance)
+        dst = self._get_destination_points(self.image_size)
 
         M_forward = cv2.getPerspectiveTransform(src, dst)
         M_back = cv2.getPerspectiveTransform(dst, src)
@@ -55,7 +59,11 @@ class PerspectiveTransformationOperation:
 
         return cv2.warpPerspective(image, M, self.image_size, flags=cv2.INTER_LINEAR)
 
-    def update_perspective_distance(self, perspective_distance):
-        # TODO: set threshold
-        self.perspective_distance = perspective_distance
-        self.M_forward, self.M_back = self._get_transform_parameters(self.image_size, perspective_distance)
+    def adjust_perspective_distance(self, update_direction=0):
+        adjust_step = 2
+        if update_direction > 0:
+            self.perspective_dist += adjust_step
+        if update_direction < 0:
+            self.perspective_dist -= adjust_step
+
+        self.M_forward, self.M_back = self._get_transform_parameters(self.perspective_dist)
