@@ -16,7 +16,7 @@ class LaneLine:
         return self.current_x
 
     @property
-    def line_coordinates(self):
+    def coordinates(self):
         return self.line.coordinates
 
     @property
@@ -28,7 +28,7 @@ class LaneLine:
         self.line = self.curved_line_factory.create(image, self.current_x)
 
         if self.line.is_valid:
-            self.current_x = int(self.line.line_coordinates[700][0])
+            self.current_x = int(self.line.coordinates[700][0])
             self.detection_area_mask = self._create_line_detection_area_mask(self.line.coordinates, image.shape)
 
     def _apply_line_detection_area_mask(self, bw_image):

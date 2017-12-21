@@ -5,7 +5,7 @@ class CurvedLine:
         self.line_image = line_image
         self.line_is_valid = line_is_valid
         self.raw_points = raw_points
-        self.coordinates = coordinates
+        self.line_coordinates = coordinates
 
     @property
     def image(self):
@@ -16,5 +16,5 @@ class CurvedLine:
         return self.line_is_valid
 
     @property
-    def line_coordinates(self):
-        return self.coordinates
+    def coordinates(self):
+        return self.line_coordinates
