@@ -10,6 +10,7 @@ from line_factory.curved_line_coordinates_factory import CurvedLineCoordinatesFa
 from line_factory.sliding_window.sliding_window_container import SlidingWindowsContainer
 from line_factory.sliding_window.sliding_window_line_detector import SlidingWindowLineDetector
 from line_factory.sliding_window.curved_line_factory import CurvedLineFactory
+from logger import Logger
 
 
 image0 = "../input/images/test6.jpg"
@@ -31,7 +32,8 @@ camera = Camera(w, h)
 camera.load_calibration_images(nx=9, ny=6, path_pattern="../input/camera_calibration/calibration*.jpg")
 camera.calibrate()
 
-threshold = ColorAndGradientThresholdOperation()
+# threshold = ColorAndGradientThresholdOperation()
+threshold = WhiteAndYellowColorThresholdOperation()
 color_threshold = WhiteAndYellowColorThresholdOperation()
 perspective_transform = PerspectiveTransformationOperation(w, h, perspective_distance, min_distance, max_distance)
 
@@ -44,7 +46,9 @@ curved_line_factory = CurvedLineFactory(sliding_window_line_detector, curved_lin
 lane = Lane(curved_line_factory)
 validator = LaneValidator(im_width=w, width_min_max=(600, 950), width_deviation_tolerance=width_deviation_tolerance)
 
-image_processor = ImageProcessor(camera, color_threshold, perspective_transform, lane, validator, True)
+logger = Logger()
+
+image_processor = ImageProcessor(camera, color_threshold, perspective_transform, lane, validator, True, logger)
 lane_detector = LaneDetector(image_processor)
 
 # lane_detector.detect_on_image(image2)
