@@ -8,17 +8,19 @@ class CurvedLineFactory:
         self.sliding_window_line_detector = sliding_window_line_detector
         self.line_coordinates_factory = line_coordinates_factory
 
-    def create(self, line_image, start_x):
-        detection_area_array = self.sliding_window_line_detector.detect(line_image, start_x)
+    def create(self, bw_image, start_x):
+        image_height = bw_image.shape[0]
+
+        detection_area_array = self.sliding_window_line_detector.detect(bw_image, start_x)
         line_is_valid = self._validate(detection_area_array)
         raw_points = None
         coordinates = None
 
         if line_is_valid:
             raw_points = self._get_raw_line(detection_area_array)
-            coordinates = self.line_coordinates_factory.create(raw_points)
+            coordinates = self.line_coordinates_factory.create(raw_points, image_height)
 
-        return CurvedLine(line_image, line_is_valid, raw_points, coordinates)
+        return CurvedLine(bw_image, line_is_valid, raw_points, coordinates)
 
     @staticmethod
     def _get_raw_line(detection_area_array):

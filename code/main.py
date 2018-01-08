@@ -38,10 +38,10 @@ camera.calibrate()
 threshold = WhiteAndYellowColorThresholdOperation()
 perspective_transform = PerspectiveTransformationOperation(w, h, vanishing_point_distance, max_distance)
 
-curved_line_coordinates_factory = CurvedLineCoordinatesFactory(w, h)
+curved_line_coordinates_factory = CurvedLineCoordinatesFactory()
 
-sliding_window_container = SlidingWindowsContainer(h)
-sliding_window_line_detector = SlidingWindowLineDetector(sliding_window_container.windows)
+sliding_window_container = SlidingWindowsContainer()
+sliding_window_line_detector = SlidingWindowLineDetector(sliding_window_container)
 curved_line_factory = CurvedLineFactory(sliding_window_line_detector, curved_line_coordinates_factory)
 
 lane = Lane(curved_line_factory)

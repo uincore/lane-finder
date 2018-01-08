@@ -15,22 +15,23 @@ class SlidingWindow:
 
 class SlidingWindowsContainer:
 
-    def __init__(self, image_height, lane_detection_area_width=200, sliding_windows_amount=9):
-        self.image_height = image_height
-        self.sliding_window_height = self.image_height // sliding_windows_amount
-        self.lane_detection_area_padding = lane_detection_area_width // 2
+    def __init__(self, lane_detection_area_width=200, sliding_windows_amount=9):
+        self.detection_area_padding = lane_detection_area_width // 2
+        self.windows_amount = sliding_windows_amount
 
-        self.sliding_windows = [self._create_window(i) for i in range(sliding_windows_amount)]
+    def get_windows(self, image_height):
+        assert type(image_height) is int, "invalid image_height parameter"
 
-    @property
-    def windows(self):
-        return self.sliding_windows
+        window_height = image_height // self.windows_amount
 
-    def _create_window(self, index):
-        y_min, y_max = self._get_detection_area_y_boundaries(index)
-        return SlidingWindow(y_min, y_max, self.lane_detection_area_padding)
+        sliding_windows = [self._create_window(i, image_height, window_height) for i in range(self.windows_amount)]
+        return sliding_windows
 
-    def _get_detection_area_y_boundaries(self, sliding_window_index):
-        y_min = self.image_height - (sliding_window_index + 1) * self.sliding_window_height
-        y_max = self.image_height - sliding_window_index * self.sliding_window_height
+    def _create_window(self, index, image_height, window_height):
+        y_min, y_max = self._get_detection_area_y_boundaries(index, image_height, window_height)
+        return SlidingWindow(y_min, y_max, self.detection_area_padding)
+
+    def _get_detection_area_y_boundaries(self, window_index, image_height, window_height):
+        y_min = image_height - (window_index + 1) * window_height
+        y_max = image_height - window_index * window_height
         return y_min, y_max

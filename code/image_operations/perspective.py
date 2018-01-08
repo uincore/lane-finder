@@ -3,21 +3,21 @@ import numpy as np
 
 class Perspective():
 
-    def __init__(self, image_width, image_height, vp_distance, max_distance, ground_line_meters_per_pixel):
-
-        assert max_distance < vp_distance, "max distance can't greater than lane vanishing point distance"
+    def __init__(self, image_width, image_height, max_distance, vp_distance, ground_line_meters_per_pixel):
 
         self.source_im_size = (image_width, image_height)
         self.x_min_max = (0, image_width)
         self.y_min_max = (image_height - max_distance, image_height)
 
-        self.vanishing_point_distance = vp_distance
         self.max_dist = max_distance
 
-        self.meters_per_pixel = ground_line_meters_per_pixel
+        self.vanishing_point_distance = None
+        self.perspective_difference = None
+        self.destination_im_size = None
 
-        self.image_perspective_width = self._calculate_perspective_width(image_width, vp_distance, max_distance)
-        self.destination_im_size = self._calculate_destination_image_size(image_width, vp_distance, max_distance)
+        self.update_vanishing_point_distance(vp_distance)
+
+        self.meters_per_pixel = ground_line_meters_per_pixel
 
     @property
     def source_image_size(self):
@@ -29,8 +29,8 @@ class Perspective():
         y_min, y_max = self.y_min_max
 
         src_points = [[x_min, y_max],
-                      [self.image_perspective_width, y_min],
-                      [x_max - self.image_perspective_width, y_min],
+                      [self.perspective_difference, y_min],
+                      [x_max - self.perspective_difference, y_min],
                       [x_max, y_max]]
 
         return np.float32(src_points)
@@ -50,20 +50,20 @@ class Perspective():
 
         return np.float32(dst_points)
 
-    @property
-    def destination_image_meters_pre_pixel_coefficient(self):
-        return self.meters_per_pixel
+    def update_vanishing_point_distance(self, vp_distance):
+        assert self.max_dist < vp_distance, "max distance can't greater than lane vanishing point distance"
 
-    def update_vanishing_point_distance(self, value):
-        self.vanishing_point_distance = value
+        image_width = self.source_im_size[0]
+
+        self.vanishing_point_distance = vp_distance
+        self.perspective_difference = (image_width * self.max_dist) / (2 * vp_distance)
+
+        destination_image_h = self._calculate_destination_image_height(vp_distance, self.max_dist)
+        self.destination_im_size = (image_width, destination_image_h)
+
+    def to_meters(self, pixels):
+        return self.meters_per_pixel * pixels
 
     @staticmethod
-    def _calculate_perspective_width(image_width, vp_distance, max_distance):
-        return (image_width / vp_distance) * (vp_distance - max_distance)
-
-    @staticmethod
-    def _calculate_destination_image_size(image_width, vp_distance, max_distance):
-        x_width = image_width
-        y_distance = (vp_distance * (2 * vp_distance - max_distance) / (vp_distance - max_distance)) - 2 * vp_distance
-
-        return x_width, y_distance
+    def _calculate_destination_image_height(vp_distance, max_distance):
+        return (vp_distance * (2 * vp_distance - max_distance) / (vp_distance - max_distance)) - 2 * vp_distance
