@@ -21,10 +21,12 @@ video1 = "../input/challenge_video.mp4"
 video2 = "../input/harder_challenge_video.mp4"
 
 # distance from image bottom to lane lines crossing in pixels, depends on camera position
-perspective_distance = 320
-min_distance = 40
-max_distance = 200
-width_deviation_tolerance = 20
+vanishing_point_distance = 320
+max_distance, x_meters_per_pixel = 200, 3.7 / 700
+line_projection = True
+
+lane_width_min_max = (600, 1000)
+lane_width_deviation_tolerance = 150
 
 w, h = 1280, 720
 
@@ -34,8 +36,7 @@ camera.calibrate()
 
 # threshold = ColorAndGradientThresholdOperation()
 threshold = WhiteAndYellowColorThresholdOperation()
-color_threshold = WhiteAndYellowColorThresholdOperation()
-perspective_transform = PerspectiveTransformationOperation(w, h, perspective_distance, min_distance, max_distance)
+perspective_transform = PerspectiveTransformationOperation(w, h, vanishing_point_distance, max_distance)
 
 curved_line_coordinates_factory = CurvedLineCoordinatesFactory(w, h)
 
@@ -44,12 +45,12 @@ sliding_window_line_detector = SlidingWindowLineDetector(sliding_window_containe
 curved_line_factory = CurvedLineFactory(sliding_window_line_detector, curved_line_coordinates_factory)
 
 lane = Lane(curved_line_factory)
-validator = LaneValidator(im_width=w, width_min_max=(600, 950), width_deviation_tolerance=width_deviation_tolerance)
+validator = LaneValidator(w, lane_width_min_max, lane_width_deviation_tolerance)
 
 logger = Logger()
 
-image_processor = ImageProcessor(camera, color_threshold, perspective_transform, lane, validator, True, logger)
+image_processor = ImageProcessor(camera, threshold, perspective_transform, lane, validator, line_projection, logger)
 lane_detector = LaneDetector(image_processor)
 
-# lane_detector.detect_on_image(image2)
-lane_detector.detect_on_video(video1)
+# lane_detector.detect_on_image(image1)
+lane_detector.detect_on_video(video0)

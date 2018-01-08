@@ -37,10 +37,10 @@ class ImageProcessor:
                 "Left line detected: {}".format(validation_result.left_line_detected),
                 "Right line detected: {}".format(validation_result.right_line_detected),
                 "Width deviation: {}".format(validation_result.width_deviation),
-                "Perspective distance: {}".format(self.perspective_transform.perspective_distance)
+                "Vanishing point distance: {}".format(self.perspective_transform.vanishing_point_distance)
             ]
 
-            self.logger.info(validation_result, bgr_frame, bw_bird_view)
+            self.logger.info(validation_result, bgr_frame, bw_bird_view, texts)
         else:
             left_line, right_line = self._get_lane_lines(self.lane, validation_result)
             perspective_distance_adjust_direction = self.lane.top_width - self.lane.width
@@ -50,7 +50,7 @@ class ImageProcessor:
                 "Left line detected: {}".format(validation_result.left_line_detected),
                 "Right line detected: {}".format(validation_result.right_line_detected),
                 "Width deviation: {}".format(validation_result.width_deviation),
-                "Perspective distance: {}".format(self.perspective_transform.perspective_distance),
+                "Vanishing point distance: {}".format(self.perspective_transform.vanishing_point_distance),
                 "Car is on lane: {}".format(validation_result.car_is_on_lane),
                 "Left X: {:.0f}   Right X: {:.0f}".format(left_line[0][0], right_line[0][0])
             ]
@@ -59,11 +59,12 @@ class ImageProcessor:
             lane_mask = self.perspective_transform.execute(lane_mask_bird_view, to_bird_view=False)
             result_image = cv2.addWeighted(lane_mask, 0.9, bgr_frame, 1, 0)
 
-            self.perspective_transform.adjust_perspective_distance(perspective_distance_adjust_direction)
+            self.perspective_transform.adjust_vanishing_point_distance(perspective_distance_adjust_direction)
 
             if not validation_result.car_is_on_lane:
                 self.lane.reset()
 
+        # result_image = bw_bird_view
         self._add_text(result_image, texts)
         return result_image
 
@@ -72,6 +73,8 @@ class ImageProcessor:
 
         if validation_result.left_line_detected and validation_result.right_line_detected:
             return lane.line_left.coordinates, lane.line_right.coordinates
+
+        assert self.allow_line_projection is True, "unexpected method invocation"
 
         shift = [[lane.width, 0]] * self.camera.image_height
         if validation_result.left_line_detected:

@@ -18,7 +18,7 @@ class Logger:
 
         self.log_file_path = path.join(self.log_output_dir, "_logs.txt")
 
-    def info(self, validation_result, bgr_image, bw_image):
+    def info(self, validation_result, bgr_image, bw_image, text_info_array):
         assert type(validation_result) is ValidationResult, "validation_result expected to be type of ValidationResult"
 
         timestamp = datetime.now().strftime("%Y_%m_%d.%H-%M-%S-%f")
@@ -26,10 +26,11 @@ class Logger:
         color_image_path = path.join(self.log_output_dir, timestamp + "_color.png")
 
         log_entry = {
-            "timestamp": timestamp,
-            "message": validation_result.message
+            "_timestamp": timestamp,
+            "message": validation_result.message,
+            "text_info": text_info_array
         }
-        log_message = json.dumps(log_entry)
+        log_message = json.dumps(log_entry, sort_keys=True)
 
         with open(self.log_file_path, "a") as log_file:
             log_file.write(log_message)
