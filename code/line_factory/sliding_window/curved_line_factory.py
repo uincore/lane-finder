@@ -9,18 +9,16 @@ class CurvedLineFactory:
         self.line_coordinates_factory = line_coordinates_factory
 
     def create(self, bw_image, start_x):
-        image_height = bw_image.shape[0]
-
         detection_area_array = self.sliding_window_line_detector.detect(bw_image, start_x)
         line_is_valid = self._validate(detection_area_array)
-        raw_points = None
         coordinates = None
 
         if line_is_valid:
             raw_points = self._get_raw_line(detection_area_array)
+            image_height = bw_image.shape[0]
             coordinates = self.line_coordinates_factory.create(raw_points, image_height)
 
-        return CurvedLine(bw_image, line_is_valid, raw_points, coordinates)
+        return CurvedLine(line_is_valid, coordinates)
 
     @staticmethod
     def _get_raw_line(detection_area_array):

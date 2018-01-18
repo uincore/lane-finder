@@ -36,9 +36,9 @@ class Camera:
 
             self._validate_image(image_bgr, image_path)
 
-            patternWasFound, corners = cv2.findChessboardCorners(image_gray, (nx, ny), None)
+            found, corners = cv2.findChessboardCorners(image_gray, (nx, ny), None)
 
-            if patternWasFound is True:
+            if found is True:
                 self.object_points.append(obj_p)
                 self.image_points.append(corners)
                 self.handled_images[image_path] = True

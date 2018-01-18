@@ -33,12 +33,3 @@ class LaneLine:
         if self.line.is_valid:
             self.start_x = int(self.line.coordinates[-20][0])
             self.end_x = int(self.line.coordinates[0][0])
-
-    # @staticmethod
-    # def _create_line_detection_area_mask(line, image_shape):
-    #     line_points_count = len(line)
-    #     delta = [[100, 0]] * line_points_count
-    #     left_b = line - delta
-    #     right_b = line + delta
-    #
-    #     return Drawing.create_mask_image(image_shape, left_b, right_b, 1)

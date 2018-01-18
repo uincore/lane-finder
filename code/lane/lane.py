@@ -11,6 +11,8 @@ class Lane:
         self.top_lane_width = 0
         self.curved_line_factory = curved_line_factory
 
+        self.lane_image = None
+
     @property
     def line_left(self):
         return self.left_line
@@ -27,7 +29,13 @@ class Lane:
     def top_width(self):
         return self.top_lane_width
 
+    @property
+    def source_image(self):
+        return self.lane_image
+
     def update(self, bw_image):
+        self.lane_image = bw_image
+
         if self.left_line is None and self.right_line is None:
             self._initialize(bw_image)
 
@@ -40,6 +48,7 @@ class Lane:
         self.left_line = None
         self.right_line = None
         self.bottom_lane_width = 0
+        self.lane_image = None
 
     def _initialize(self, bw_image):
         left_line_x, right_line_x = self._get_lane_lines_start_points(bw_image)
