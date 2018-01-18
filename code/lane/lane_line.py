@@ -24,6 +24,10 @@ class LaneLine:
         return self.line.coordinates
 
     @property
+    def radius(self):
+        return self.line.radius
+
+    @property
     def is_valid(self):
         return self.line.is_valid
 

@@ -4,12 +4,18 @@ from lane.lane_line import LaneLine
 
 class Lane:
 
-    def __init__(self, curved_line_factory):
+    def __init__(self, curved_line_factory, ground_line_meters_per_pixel):
+        """
+        :param curved_line_factory:
+        :param ground_line_meters_per_pixel: meters/pixel on x = 0 line
+        """
         self.left_line = None
         self.right_line = None
         self.bottom_lane_width = 0
         self.top_lane_width = 0
+        self.lane_radius = 0
         self.curved_line_factory = curved_line_factory
+        self.meters_per_pixel = ground_line_meters_per_pixel
 
         self.lane_image = None
 
@@ -33,6 +39,10 @@ class Lane:
     def source_image(self):
         return self.lane_image
 
+    @property
+    def radius_m(self):
+        return self.lane_radius * self.meters_per_pixel
+
     def update(self, bw_image):
         self.lane_image = bw_image
 
@@ -42,7 +52,8 @@ class Lane:
         self.left_line.update(bw_image)
         self.right_line.update(bw_image)
 
-        self._update_lane_width(self.left_line, self.right_line)
+        self.bottom_lane_width, self.top_lane_width = self._get_lane_width(self.left_line, self.right_line)
+        self.lane_radius = self._get_lane_radius(self.left_line, self.right_line)
 
     def reset(self):
         self.left_line = None
@@ -70,14 +81,25 @@ class Lane:
 
         return left_line_x, right_line_x
 
-    def _update_lane_width(self, left_line, right_line):
+    @staticmethod
+    def _get_lane_radius(left_line, right_line):
         if left_line.is_valid == right_line.is_valid is True:
-            self.bottom_lane_width = right_line.x_bottom - left_line.x_bottom
-            self.top_lane_width = right_line.x_top - left_line.x_top
+            return left_line.radius
 
-        elif left_line.is_valid != right_line.is_valid:
-            self.top_lane_width = self.bottom_lane_width
+            # return (left_line.radius + right_line.radius) / 2
 
-        else:
-            self.bottom_lane_width = 0
-            self.top_lane_width = 0
+        if left_line.is_valid:
+            return left_line.radius
+        if right_line.is_valid:
+            return right_line.radius
+
+        return 0
+
+    def _get_lane_width(self, left_line, right_line):
+        if left_line.is_valid == right_line.is_valid is True:
+            return right_line.x_bottom - left_line.x_bottom, right_line.x_top - left_line.x_top
+
+        if left_line.is_valid != right_line.is_valid:
+            return self.bottom_lane_width, self.bottom_lane_width
+
+        return 0, 0

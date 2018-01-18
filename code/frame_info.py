@@ -17,6 +17,7 @@ class FrameInfo:
             texts.insert(0, "Lane lost: {}".format(lane_validation_result.message))
         else:
             texts.insert(0, "Lane detected")
+            texts.append("Lane curvature radius: {:.0f} m".format(lane.radius_m))
             texts.append("Car is on lane: {}".format(lane_validation_result.car_is_on_lane))
 
         return texts
