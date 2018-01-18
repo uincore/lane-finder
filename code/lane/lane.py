@@ -84,9 +84,7 @@ class Lane:
     @staticmethod
     def _get_lane_radius(left_line, right_line):
         if left_line.is_valid == right_line.is_valid is True:
-            return left_line.radius
-
-            # return (left_line.radius + right_line.radius) / 2
+            return (left_line.radius + right_line.radius) / 2
 
         if left_line.is_valid:
             return left_line.radius
