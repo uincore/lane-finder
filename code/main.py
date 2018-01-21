@@ -25,7 +25,7 @@ video2 = "../input/harder_challenge_video.mp4"
 vanishing_point_distance = 310
 x_meters_per_pixel = 3.7 / 700
 # max distance will be a result of vanishing_point_distance * max_distance_coefficient multiplication
-max_distance_coefficient = 0.85
+max_distance_coefficient = 0.75
 # allow ar deny lane mask construction for known lane width and one valid lane line case
 allow_line_projection = True
 # valid lane width boundaries
@@ -56,5 +56,5 @@ logger = Logger()
 image_processor = ImageProcessor(camera, threshold, perspective_transform, lane, validator, lane_mask_factory, logger)
 lane_detector = LaneDetector(image_processor)
 
-lane_detector.detect_on_image(image0)
-# lane_detector.detect_on_video(video0)
+# lane_detector.detect_on_image(image0)
+lane_detector.detect_on_video(video0)

@@ -17,7 +17,9 @@ class FrameInfo:
             texts.insert(0, "Lane lost: {}".format(lane_validation_result.message))
         else:
             texts.insert(0, "Lane detected")
-            texts.append("Lane curvature radius: {:.0f} m".format(lane.radius_m))
+            lane_radius_km = lane.radius_m / 1000
+            radius_text = "> 10" if lane_radius_km > 10 else "{:.3f}".format(lane_radius_km)
+            texts.append("Lane curvature radius: {} km".format(radius_text))
             texts.append("Car is on lane: {}".format(lane_validation_result.car_is_on_lane))
 
         return texts
