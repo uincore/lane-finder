@@ -1,5 +1,6 @@
 import numpy as np
 from lane.lane_line import LaneLine
+from collections import deque
 
 
 class Lane:
@@ -16,6 +17,7 @@ class Lane:
         self.lane_radius = 0
         self.curved_line_factory = curved_line_factory
         self.meters_per_pixel = ground_line_meters_per_pixel
+        self.radius_cache = deque([], maxlen=25)
 
         self.lane_image = None
 
@@ -41,7 +43,7 @@ class Lane:
 
     @property
     def radius_m(self):
-        return self.lane_radius * self.meters_per_pixel
+        return np.average(self.radius_cache) * self.meters_per_pixel
 
     def update(self, bw_image):
         self.lane_image = bw_image
@@ -54,12 +56,14 @@ class Lane:
 
         self.bottom_lane_width, self.top_lane_width = self._get_lane_width(self.left_line, self.right_line)
         self.lane_radius = self._get_lane_radius(self.left_line, self.right_line)
+        self.radius_cache.append(self.lane_radius)
 
     def reset(self):
         self.left_line = None
         self.right_line = None
         self.bottom_lane_width = 0
         self.lane_image = None
+        self.radius_cache.clear()
 
     def _initialize(self, bw_image):
         left_line_x, right_line_x = self._get_lane_lines_start_points(bw_image)
