@@ -3,11 +3,11 @@ import numpy as np
 
 class TransformationParameters:
 
-    def __init__(self, im_width, im_height, vp_distance, max_distance_coefficient):
+    def __init__(self, im_width, im_height, initial_vp_distance, max_distance_coefficient):
         """
         :param im_width: original image width
         :param im_height: original image height
-        :param vp_distance: lane vanishing point distance from the bottom of the image
+        :param initial_vp_distance: initial lane vanishing point distance from the bottom of the image
         :param max_distance_coefficient: lane max detection distance coefficient. Max distance in points will be
                                         calculated as max_distance = vp_distance * max_distance_coefficient.
                                         Should be greater than 0 and less then 0.9
@@ -26,7 +26,7 @@ class TransformationParameters:
         self.vanishing_point_distance = None
         self.perspective_difference = None
         self.destination_im_size = None
-        self.update_vanishing_point_distance(vp_distance)
+        self.update_vanishing_point_distance(initial_vp_distance)
 
     @property
     def lane_vanishing_point_distance(self):
@@ -71,9 +71,6 @@ class TransformationParameters:
 
         destination_image_height = self._calculate_destination_image_height(vp_distance, self.max_distance)
         self.destination_im_size = (self.destination_image_width, destination_image_height)
-
-    def to_meters(self, pixels):
-        return self.meters_per_pixel * pixels
 
     @staticmethod
     def _calculate_destination_image_height(vp_distance, max_distance):

@@ -22,7 +22,7 @@ video1 = "../input/challenge_video.mp4"
 video2 = "../input/harder_challenge_video.mp4"
 
 # distance from image bottom to lane lines crossing in pixels, depends on camera position
-vanishing_point_distance = 310
+initial_vanishing_point_distance = 310
 x_meters_per_pixel = 3.7 / 700
 # max distance will be a result of vanishing_point_distance * max_distance_coefficient multiplication
 max_distance_coefficient = 0.75
@@ -31,7 +31,7 @@ allow_line_projection = True
 # valid lane width boundaries
 lane_width_min_max = (650, 1000)
 lane_width_deviation_tolerance = 60
-
+# camera output image size
 w, h = 1280, 720
 
 camera = Camera(w, h)
@@ -40,7 +40,7 @@ camera.calibrate()
 
 # threshold = ColorAndGradientThresholdOperation()
 threshold = WhiteAndYellowColorThresholdOperation()
-transform_parameters = TransformationParameters(w, h, vanishing_point_distance, max_distance_coefficient)
+transform_parameters = TransformationParameters(w, h, initial_vanishing_point_distance, max_distance_coefficient)
 perspective_transform = PerspectiveTransformationOperation(transform_parameters)
 
 sliding_window_container = SlidingWindowsContainer()

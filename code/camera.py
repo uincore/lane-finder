@@ -14,14 +14,6 @@ class Camera:
         self.dist_coefficients = None
         self.handled_images = {}
 
-    @property
-    def image_width(self):
-        return self.width
-
-    @property
-    def image_height(self):
-        return self.height
-
     def load_calibration_images(self, nx, ny, path_pattern):
         image_paths = glob.glob(path_pattern)
 
