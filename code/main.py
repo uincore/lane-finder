@@ -38,7 +38,6 @@ camera = Camera(w, h)
 camera.load_calibration_images(nx=9, ny=6, path_pattern="../input/camera_calibration/calibration*.jpg")
 camera.calibrate()
 
-# threshold = ColorAndGradientThresholdOperation()
 threshold = WhiteAndYellowColorThresholdOperation()
 transform_parameters = TransformationParameters(w, h, initial_vanishing_point_distance, max_distance_coefficient)
 perspective_transform = PerspectiveTransformationOperation(transform_parameters)
