@@ -29,12 +29,12 @@ class ImageProcessor:
             self.lane.reset()
             self.logger.info(validation_result, bgr_frame, bw_bird_view, texts)
 
-            result_image = bgr_frame
+            result_image = undistorted_image
         else:
             lane_mask_bird_view = self.lane_mask_factory.create(self.lane, validation_result)
             lane_mask = self.perspective_transform.execute(lane_mask_bird_view, to_bird_view=False)
 
-            result_image = cv2.addWeighted(lane_mask, 0.9, bgr_frame, 1, 0)
+            result_image = cv2.addWeighted(lane_mask, 0.9, undistorted_image, 1, 0)
 
             perspective_distance_adjust_direction = self.lane.top_width - self.lane.width
             self.perspective_transform.adjust_vanishing_point_distance(perspective_distance_adjust_direction)

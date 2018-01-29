@@ -1,8 +1,9 @@
 ## Finding Lane Boundaries on the Road
 
-The project is a software pipeline that does road lane boundaries identification on images or video. The project uses two assumptions:
+The project is a software pipeline that does road lane boundaries identification on images or on video. The project uses two assumptions:
 - camera is mounted at the center of a car
 - lane lines are parallel
+- lane lines could be white or yellow
 
 ##
 
@@ -11,12 +12,12 @@ The project is a software pipeline that does road lane boundaries identification
 [//]: # (Image References)
 
 [img_corners]: ./images/corners.png "Internal corners nx=9, ny=6"
-[img_distortion_example]: ./images/distortion_example.png "Barrel distortion example"
-[img_undistortion_example]: ./images/undistorted.png "Image undistortion example"
-[img_example_input_image]: ./images/example_input_image.jpg "Initial frame"
+[img_chessboard_distorted]: ./images/chessboard_distorted.png "Barrel distortion example"
+[img_chessboard_undistorted]: ./images/chessboard_undistorted.png "Image undistortion example"
 [gif_pipeline_visualisation]: ./images/pipeline.gif "Pipeline visualisation"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
+[gif_road_image_undistortion]: ./images/road_image_undistortion.gif "Road image undistortion"
+[img_undistorted_image]: ./images/001_undistorted_image.png "Undistorted road image"
+[img_bw_image_filtered]: ./images/002_bw_image_filtered.png "Undistorted road image"
 
 Here is required steps with some description:
 
@@ -79,7 +80,7 @@ undistorted_image = camera.undistort(bgr_frame)
 ```
 Here is an example of image distortion minimisation:
 
-|![alt text][img_distortion_example]|![alt text][img_undistortion_example]|
+|![alt text][img_chessboard_distorted] |![alt text][img_chessboard_undistorted]|
 |:---:|:---:|
 | original image | undistorted image | 
 
@@ -87,25 +88,33 @@ The result is not perfect, but it is a way better than source image. I would ass
 
 **Image processing pipeline**
 
-Image processing pipeline is defined in [ImageProcessor](https://github.com/wakeful-sun/lane-finder/blob/master/code/image_processor.py) class. The class constructor function accepts all parties involved in frame processing.
-And it has next stages:
-- frame undistortion
-- color threshold filtering
-- perspective transformation to bird view
-- lane lines detection
-- lane validation
-- lane mask creation
-- lane mask perspective transformation from bird view
-- original frame image and transformed lane mask concatenation
-- frame text information output
+Image processing pipeline is defined in [`ImageProcessor`](https://github.com/wakeful-sun/lane-finder/blob/master/code/image_processor.py) class. The class constructor function accepts all parties involved in frame processing.
 
 ![alt text][gif_pipeline_visualisation]
 
-*Frame undistortion:*
+The pipeline consists of next stages:
+- frame undistortion
+- color threshold filtering
+- perspective transformation to "bird view"
+- lane lines detection
+- lane validation
+- lane mask creation
+- lane mask perspective transformation back from "bird view"
+- original frame image and transformed lane mask concatenation
+- frame text information output
 
+<h6>Frame undistortion</h6>
 ```
 undistorted_image = self.camera.undistort(bgr_frame)
 ```
+ ![alt text][gif_road_image_undistortion]
 
+<h6>Color threshold filtering</h6>
+Using an assumption that lane lines could be lane lines could be white or yellow, I created color filter for highlighting yellow and white objects on images. The filter converts image to HSV format and then applies actual color boundaries filter. The result is black & wight image.
 
+|<img src="./images/001_undistorted_image.png" alt="Undistorted road image" width="400px">|<img src="./images/002_bw_image_filtered.png" alt="Color threshold" width="400px">|
+|:---:|:---:|
+| undistorted image | result of color threshold filtering |
+
+<h6>Perspective transformation to "bird view"</h6>
 Coming soon...

@@ -31,7 +31,7 @@ class PerspectiveTransformationOperation:
         return cv2.warpPerspective(image, M, size, flags=cv2.INTER_LINEAR)
 
     def adjust_vanishing_point_distance(self, update_direction=0):
-        adjust_step = 2
+        adjust_step = 1
         vp_distance = 0
         if update_direction > 0:
             vp_distance = self.transformation_parameters.lane_vanishing_point_distance + adjust_step
