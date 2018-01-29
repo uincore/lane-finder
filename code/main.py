@@ -1,7 +1,6 @@
 from image_processor import ImageProcessor
 from lane_detector import LaneDetector
 from camera import Camera
-from image_operations.threshold import ColorAndGradientThresholdOperation
 from image_operations.color_threshold import WhiteAndYellowColorThresholdOperation
 from image_operations.transformation_parameters import TransformationParameters
 from image_operations.perspective_transformation import PerspectiveTransformationOperation
@@ -17,6 +16,7 @@ from logger import Logger
 image0 = "../input/images/test6.jpg"
 image1 = "../input/images/straight_lines1.jpg"
 image2 = "../input/images/straight_lines2.jpg"
+image3 = "../input/images/test3.jpg"
 video0 = "../input/project_video.mp4"
 video1 = "../input/challenge_video.mp4"
 video2 = "../input/harder_challenge_video.mp4"

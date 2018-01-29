@@ -38,6 +38,9 @@ class Camera:
                 print("Image [{}] has intersection pattern different from {}x{} and will be skipped"
                       .format(image_path, nx, ny))
 
+        if len(self.handled_images) == len(image_paths):
+            print("All calibration images have been loaded.")
+
     def calibrate(self):
         result = cv2.calibrateCamera(self.object_points, self.image_points, (self.width, self.height),
                                      self.camera_matrix, self.dist_coefficients)

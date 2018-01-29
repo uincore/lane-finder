@@ -1,7 +1,3 @@
-# import numpy as np
-# from lane.drawing import Drawing
-
-
 class LaneLine:
 
     def __init__(self, start_x, curved_line_factory):
