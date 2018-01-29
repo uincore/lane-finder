@@ -104,10 +104,12 @@ The pipeline consists of next stages:
 - frame text information output
 
 <h6>Frame undistortion</h6>
+
 ```
 undistorted_image = self.camera.undistort(bgr_frame)
 ```
- ![alt text][gif_road_image_undistortion]
+
+![alt text][gif_road_image_undistortion]
 
 <h6>Color threshold filtering</h6>
 Using an assumption that lane lines could be lane lines could be white or yellow, I created color filter for highlighting yellow and white objects on images. The filter converts image to HSV format and then applies actual color boundaries filter. The result is black & wight image.
