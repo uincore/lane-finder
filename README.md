@@ -2,6 +2,7 @@
 
 The project is a software pipeline that does road lane boundaries identification on images or on video. The project uses two assumptions:
 - camera is mounted at the center of a car
+- camera watching direction is the continuation of car central line
 - lane lines are parallel
 - lane lines could be white or yellow
 
@@ -16,8 +17,7 @@ The project is a software pipeline that does road lane boundaries identification
 [img_chessboard_undistorted]: ./images/chessboard_undistorted.png "Image undistortion example"
 [gif_pipeline_visualisation]: ./images/pipeline.gif "Pipeline visualisation"
 [gif_road_image_undistortion]: ./images/road_image_undistortion.gif "Road image undistortion"
-[img_undistorted_image]: ./images/001_undistorted_image.png "Undistorted road image"
-[img_bw_image_filtered]: ./images/002_bw_image_filtered.png "Undistorted road image"
+[img_visual_ray_method]: ./images/visual_ray_method.png "Visual ray method visualization"
 
 Here is required steps with some description:
 
@@ -86,6 +86,8 @@ Here is an example of image distortion minimisation:
 
 The result is not perfect, but it is a way better than source image. I would assume more calibration images should make the end result even better.
 
+##
+
 **Image processing pipeline**
 
 Image processing pipeline is defined in [`ImageProcessor`](https://github.com/wakeful-sun/lane-finder/blob/master/code/image_processor.py) class. The class constructor function accepts all parties involved in frame processing.
@@ -95,11 +97,11 @@ Image processing pipeline is defined in [`ImageProcessor`](https://github.com/wa
 The pipeline consists of next stages:
 - frame undistortion
 - color threshold filtering
-- perspective transformation to "bird view"
+- perspective transformation to top-down view
 - lane lines detection
 - lane validation
 - lane mask creation
-- lane mask perspective transformation back from "bird view"
+- lane mask perspective transformation back from top-down view
 - original frame image and transformed lane mask concatenation
 - frame text information output
 
@@ -112,11 +114,31 @@ undistorted_image = self.camera.undistort(bgr_frame)
 ![alt text][gif_road_image_undistortion]
 
 <h6>Color threshold filtering</h6>
-Using an assumption that lane lines could be lane lines could be white or yellow, I created color filter for highlighting yellow and white objects on images. The filter converts image to HSV format and then applies actual color boundaries filter. The result is black & wight image.
+Using an assumption that lane lines could be white or yellow, I created color filter for highlighting yellow and white objects on images. The filter converts image to HSV format and then applies actual color boundaries filter. The result is black & wight image.
 
 |<img src="./images/001_undistorted_image.png" alt="Undistorted road image" width="400px">|<img src="./images/002_bw_image_filtered.png" alt="Color threshold" width="400px">|
 |:---:|:---:|
 | undistorted image | result of color threshold filtering |
 
-<h6>Perspective transformation to "bird view"</h6>
+<h6>Perspective transformation to top-down view</h6>
+In order to be able to get lane physical parameters (like curvature, distances, angle between car central line and road lane central line) we need to apply a perspective transform, so that it looks like we are viewing the road from the top. 
+
+|<img src="./images/front_view_with_boundaries.png" alt="Color threshold" width="400px">|<img src="./images/top_view.png" alt="Bird view" width="400px">|
+|:---:|:---:|
+| **front view** | **top-down view** |
+
+At first we need to figure out how to properly chouse source area boundaries and destination image size. 
+The program uses transformation algorithm that produces properly scaled top-down view. 
+Red lines on **front view** above define source area that transformed into **top-down view** image.
+The algorithm program uses for producing all required parameters build with help of refinement known as [**visual ray method**](https://www.handprint.com/HP/WCL/perspect2.html). 
+
+|![alt text][img_visual_ray_method]|
+|:---:|
+|**visual ray method applied to straight lane**|
+
+
+|<img src="./images/002_bw_image_filtered.png" alt="Color threshold" width="400px">|<img src="./images/003_bw_bird_view.png" alt="Bird view" width="400px">|
+|:---:|:---:|
+| undistorted image | result of color threshold filtering |
+
 Coming soon...
