@@ -128,7 +128,7 @@ In order to be able to get lane physical parameters (like curvature, distances, 
 | **front view** | **top-down view** |
 
 At first we need to figure out how to properly chouse source area boundaries and destination image size. 
-The program uses transformation algorithm that produces properly scaled top-down view. 
+Top-down view image has same scaling coefficient along all axes. 
 Red lines on **front view** above define source area that transformed into **top-down view** image.
 The algorithm program uses for producing all required parameters build with help of refinement known as [**visual ray method**](https://www.handprint.com/HP/WCL/perspect2.html). 
 
