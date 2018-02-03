@@ -20,13 +20,23 @@ class PerspectiveTransformationOperation:
 
         return M_forward, M_back
 
-    def execute(self, image, to_bird_view=True):
-        if to_bird_view:
+    def execute(self, image, transform_to):
+        """
+        :param image: source image
+        :param transform_to: acceptable value is 'top_down_view' or 'front_view'
+        :return: new image with applied perspective transformation
+        """
+        assert transform_to == "top_down_view" or transform_to == "front_view", \
+            "invalid transform_direction"
+
+        if transform_to == "top_down_view":
             M = self.M_forward
             size = self.transformation_parameters.destination_image_size
-        else:
+        elif transform_to == "front_view":
             M = self.M_back
             size = self.transformation_parameters.source_image_size
+        else:
+            raise Exception("acceptable value for transform_direction is 'top_down_view' or 'front_view'")
 
         return cv2.warpPerspective(image, M, size, flags=cv2.INTER_LINEAR)
 

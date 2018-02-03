@@ -18,7 +18,7 @@ class ImageProcessor:
         undistorted_image = self.camera.undistort(bgr_frame)
 
         bw_image_filtered = self.threshold.execute(undistorted_image)
-        bw_bird_view = self.perspective_transform.execute(bw_image_filtered, to_bird_view=True)
+        bw_bird_view = self.perspective_transform.execute(bw_image_filtered, transform_to="top_down_view")
 
         self.lane.update(bw_bird_view)
 
@@ -32,7 +32,7 @@ class ImageProcessor:
             result_image = undistorted_image
         else:
             lane_mask_bird_view = self.lane_mask_factory.create(self.lane, validation_result)
-            lane_mask = self.perspective_transform.execute(lane_mask_bird_view, to_bird_view=False)
+            lane_mask = self.perspective_transform.execute(lane_mask_bird_view, transform_to="front_view")
 
             result_image = cv2.addWeighted(lane_mask, 0.9, undistorted_image, 1, 0)
 

@@ -2,7 +2,7 @@
 
 The project is a software pipeline that does road lane boundaries identification on images or on video. The project uses two assumptions:
 - camera is mounted at the center of a car
-- camera watching direction is the continuation of car central line
+- camera optical axis is on car's center line
 - lane lines are parallel
 - lane lines could be white or yellow
 
@@ -18,6 +18,7 @@ The project is a software pipeline that does road lane boundaries identification
 [gif_pipeline_visualisation]: ./images/pipeline.gif "Pipeline visualisation"
 [gif_road_image_undistortion]: ./images/road_image_undistortion.gif "Road image undistortion"
 [img_visual_ray_method]: ./images/visual_ray_method.png "Visual ray method visualization"
+[img_source_points]: ./images/source_points.jpg "Source points"
 
 Here is required steps with some description:
 
@@ -48,7 +49,7 @@ camera.calibrate()
 initial_vanishing_point_distance = 310
 ```
 
-Lane vanishing point distance is a distance from bottom of an image to lane perspective center in pixels. 
+Lane vanishing point distance is a distance from bottom of an image to straight lane perspective center on flat road in pixels. 
 It don't have to be precise value - program will adjust it during video frames processing.
 
 4. Set [meters per pixel coefficient](https://github.com/wakeful-sun/lane-finder/blob/105d35d85a5edc6c61776560e8a3858a6aa0f6e2/code/main.py#L26) that corresponds to bottom of an image for proper scailing.
@@ -65,7 +66,7 @@ x_meters_per_pixel = 3.7 / 700
 Optical distortion is a camera lens error that deforms and bends physically straight lines and makes them appear curvy on image. 
 Camera I used also produces distorted images. Camera calibration produces distortion coefficients, that can be applied to any camera image for distortion minimisation. My camera calibration is built on top of [OpenCV](https://docs.opencv.org/3.3.1/dc/dbb/tutorial_py_calibration.html) library and consits of:
 
-- calibration data collection. For given (nx, ny) pattern I retrieve actual coordinates from each real calibration chessboard image using `cv2.findChessboardCorners` function
+- collecting calibration data. For given (nx, ny) pattern I retrieve actual coordinates from each real calibration chessboard image using `cv2.findChessboardCorners` function
 ```
 camera.load_calibration_images(nx=9, ny=6, path_pattern="../input/camera_calibration/calibration*.jpg")
 ```
@@ -102,7 +103,7 @@ The pipeline consists of next stages:
 - lane validation
 - lane mask creation
 - lane mask perspective transformation back from top-down view
-- original frame image and transformed lane mask concatenation
+- undistorted image and transformed lane mask concatenation
 - frame text information output
 
 <h6>Frame undistortion</h6>
@@ -114,31 +115,72 @@ undistorted_image = self.camera.undistort(bgr_frame)
 ![alt text][gif_road_image_undistortion]
 
 <h6>Color threshold filtering</h6>
-Using an assumption that lane lines could be white or yellow, I created color filter for highlighting yellow and white objects on images. The filter converts image to HSV format and then applies actual color boundaries filter. The result is black & wight image.
+
+```
+bw_image_filtered = self.threshold.execute(undistorted_image)
+```
+Using an assumption that lane lines could be white or yellow, I created color filter for highlighting yellow and white objects on images. The filter converts image to HSV format and then applies actual color boundaries. The result is black & wight image.
 
 |<img src="./images/001_undistorted_image.png" alt="Undistorted road image" width="400px">|<img src="./images/002_bw_image_filtered.png" alt="Color threshold" width="400px">|
 |:---:|:---:|
 | undistorted image | result of color threshold filtering |
 
 <h6>Perspective transformation to top-down view</h6>
+
+```
+bw_bird_view = self.perspective_transform.execute(bw_image_filtered, transform_to="top_down_view")
+```
 In order to be able to get lane physical parameters (like curvature, distances, angle between car central line and road lane central line) we need to apply a perspective transform, so that it looks like we are viewing the road from the top. 
 
-|<img src="./images/front_view_with_boundaries.png" alt="Color threshold" width="400px">|<img src="./images/top_view.png" alt="Bird view" width="400px">|
-|:---:|:---:|
-| **front view** | **top-down view** |
+Perspective transformation requires source and destination points. How to choose them? 
+I've started from an assumption that lane lines are parallel on real road. 
+So correct transformation to top-down view should have parallel lane lines. 
+Then using image of **straight lane** below I found lane vanishing point **VP** and simply measured distance to it from the bottom of the image (**A_VP**). 
+Initial [vanishing point](https://github.com/wakeful-sun/lane-finder/blob/105d35d85a5edc6c61776560e8a3858a6aa0f6e2/code/main.py#L25) is a configurable parameter that have to be set for certain camera position. 
+Another configurable parameter is [**AE** distance](https://github.com/wakeful-sun/lane-finder/blob/20d6176f70656511e2f1241fe01e686b929ff340/code/main.py#L28).
 
-At first we need to figure out how to properly chouse source area boundaries and destination image size. 
-Top-down view image has same scaling coefficient along all axes. 
-Red lines on **front view** above define source area that transformed into **top-down view** image.
-The algorithm program uses for producing all required parameters build with help of refinement known as [**visual ray method**](https://www.handprint.com/HP/WCL/perspect2.html). 
+|![alt text][img_source_points]|
+|:---:|
+|**straight lane on flat road**|
+
+Knowing **A_VP**, **BC** (which is equal **AE**) and **AB** (`image_width/2`) distances and some basic trigonometry we can found [**CD**](https://github.com/wakeful-sun/lane-finder/blob/20d6176f70656511e2f1241fe01e686b929ff340/code/image_operations/transformation_parameters.py#L70) distance. 
+
+```
+CD = BC * AB / A_VP
+```
+
+And finally it gives us [source points](https://github.com/wakeful-sun/lane-finder/blob/20d6176f70656511e2f1241fe01e686b929ff340/code/image_operations/transformation_parameters.py#L40-L49)
+
+Now I decided not to pick up static destination points for perspective transformation, because it will produce deformed image. Equal scaling along axes will give me opportunity of visual validation of top-down view. 
+That also should simplify measurement of lane curvature, distances and car position angles. 
+
+The algorithm program uses for producing size of equally scaled along (x, y) axis top-down view image is built with help of refinement known as [**visual ray method**](https://www.handprint.com/HP/WCL/perspect2.html). 
 
 |![alt text][img_visual_ray_method]|
 |:---:|
 |**visual ray method applied to straight lane**|
 
+The resulting top-down view image size:
+- width is the same with as the one of source image
+- height [**DF**](https://github.com/wakeful-sun/lane-finder/blob/20d6176f70656511e2f1241fe01e686b929ff340/code/image_operations/transformation_parameters.py#L76-L78) can be found usin known parameters and trigonometric equation:
+```
+(2 * D_VP + DF) / A'F = (2 * VP - CD) / AC
+```
+so
+```
+DF = A'F * (2 * VP - CD) / AC - 2 * D_VP
+```
 
-|<img src="./images/002_bw_image_filtered.png" alt="Color threshold" width="400px">|<img src="./images/003_bw_bird_view.png" alt="Bird view" width="400px">|
+And here is how undistorted image to top-down view image perspective transformation result is look like:
+
+|<img src="./images/002_bw_image_filtered.png" alt="Front view" width="400px">|<img src="./images/003_bw_bird_view.png" alt="Top-down view" width="400px">|
 |:---:|:---:|
-| undistorted image | result of color threshold filtering |
+| undistorted image | result of perspective transformation |
+
+<h6>Lane lines detection</h6>
+
+```
+self.lane.update(bw_bird_view)
+```
 
 Coming soon...

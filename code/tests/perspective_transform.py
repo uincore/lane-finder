@@ -18,14 +18,14 @@ perspective_transform = PerspectiveTransformationOperation(transform_parameters)
 
 bgr_frame = cv2.imread("001_undistorted_image.png")
 
-bird_view = perspective_transform.execute(bgr_frame, to_bird_view=True)
+top_down_view = perspective_transform.execute(bgr_frame, transform_to="top_down_view")
 
 p = transform_parameters.source_image_points.astype(int)
 p = p.reshape((-1,1,2))
 cv2.polylines(bgr_frame, [p] ,True,(0,0,255), 3)
 
 cv2.imwrite("front_view_with_lines.png", bgr_frame)
-cv2.imwrite("top_view.png", bird_view)
+cv2.imwrite("top_view.png", top_down_view)
 
 
 
