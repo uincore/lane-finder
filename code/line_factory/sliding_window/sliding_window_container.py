@@ -5,12 +5,17 @@ class SlidingWindow:
         self.y_min = y_min
         self.y_max = y_max
         self.x_padding = x_padding
+        self.w_shape = x_padding * 2,  y_max - y_min
 
     def detection_area(self, window_center_x):
         x_min = window_center_x - self.x_padding
         x_max = window_center_x + self.x_padding
 
         return (x_min, self.y_min), (x_max, self.y_max)
+
+    @property
+    def shape(self):
+        return self.w_shape
 
 
 class SlidingWindowsContainer:

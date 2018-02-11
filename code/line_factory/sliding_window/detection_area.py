@@ -3,20 +3,17 @@ import numpy as np
 
 class DetectionArea:
 
-    def __init__(self, start_x, line_points, pixels_threshold_min=50, pixels_threshold_max=3000):
-        self.start_x = start_x
+    def __init__(self, start_x, line_points, window_shape):
+        percents_threshold_max = 0.2
+        pixels_threshold_min = 50
+
         self.y, self.x = line_points
-        self.x_count = len(self.x)
-        self.pixels_threshold_min = pixels_threshold_min
-        self.pixels_threshold_max = pixels_threshold_max
-        self.new_x = self._get_new_x()
-        self.area_is_valid = self.x_count > 10
 
-    def _get_new_x(self):
-        if self.pixels_threshold_min < self.x_count < self.pixels_threshold_max:
-            return np.int(np.mean(self.x))
+        x_count = len(self.x)
+        pixels_threshold_max = window_shape[0] * window_shape[1] * percents_threshold_max
 
-        return self.start_x
+        self.area_is_valid = pixels_threshold_min < x_count < pixels_threshold_max
+        self.new_x = np.int(np.mean(self.x)) if self.area_is_valid else start_x
 
     @property
     def line_points_x(self):

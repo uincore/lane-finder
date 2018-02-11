@@ -22,7 +22,7 @@ video1 = "../input/challenge_video.mp4"
 video2 = "../input/harder_challenge_video.mp4"
 
 # distance from image bottom to lane lines crossing in pixels, depends on camera position
-initial_vanishing_point_distance = 310
+initial_vanishing_point_distance = 300
 x_meters_per_pixel = 3.7 / 700
 # max distance will be a result of vanishing_point_distance * max_distance_coefficient multiplication
 max_distance_coefficient = 0.75
