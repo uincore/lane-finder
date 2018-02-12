@@ -6,9 +6,8 @@ The project is a software pipeline that does road lane boundaries identification
 - lane lines are parallel
 - lane lines could be white or yellow
 
-##
-
-**How to start with your own camera**
+#
+#### How to start with your own camera
 
 [//]: # (Image References)
 
@@ -20,6 +19,7 @@ The project is a software pipeline that does road lane boundaries identification
 [img_visual_ray_method]: ./images/visual_ray_method.png "Visual ray method visualization"
 [img_source_points]: ./images/source_points.jpg "Source points"
 [img_lane_uml]: ./images/lane_uml.png "Lane UML"
+[gif_sliding_window_animation]: ./images/sliding_window_animation.gif "Sliding window animation"
 
 Here is required steps with some description:
 
@@ -59,10 +59,10 @@ It don't have to be precise value - program will adjust it during video frames p
 x_meters_per_pixel = 3.7 / 700
 ```
 
-##
-### Detailed program description 
+#
+#### Detailed program description 
 
-**Camera Calibration**
+##### Camera Calibration
 
 Optical distortion is a camera lens error that deforms and bends physically straight lines and makes them appear curvy on image. 
 Camera I used also produces distorted images. Camera calibration produces distortion coefficients, that can be applied to any camera image for distortion minimisation. My camera calibration is built on top of [OpenCV](https://docs.opencv.org/3.3.1/dc/dbb/tutorial_py_calibration.html) library and consits of:
@@ -88,9 +88,7 @@ Here is an example of image distortion minimisation:
 
 The result is not perfect, but it is a way better than source image. I would assume more calibration images should make the end result even better.
 
-##
-
-**Image processing pipeline**
+##### Image processing pipeline
 
 Image processing pipeline is defined in [`ImageProcessor`](https://github.com/wakeful-sun/lane-finder/blob/master/code/image_processor.py) class. The class constructor function accepts all parties involved in frame processing.
 
@@ -107,7 +105,7 @@ The pipeline consists of next stages:
 - undistorted image and transformed lane mask concatenation
 - frame text information output
 
-<h6>Frame undistortion</h6>
+###### Frame undistortion
 
 ``` python
 undistorted_image = self.camera.undistort(bgr_frame)
@@ -115,7 +113,7 @@ undistorted_image = self.camera.undistort(bgr_frame)
 
 ![alt text][gif_road_image_undistortion]
 
-<h6>Color threshold filtering</h6>
+###### Color threshold filtering
 
 ``` python
 bw_image_filtered = self.threshold.execute(undistorted_image)
@@ -126,7 +124,7 @@ Using an assumption that lane lines could be white or yellow, I created color fi
 |:---:|:---:|
 | undistorted image | result of color threshold filtering |
 
-<h6>Perspective transformation to top-down view</h6>
+###### Perspective transformation to top-down view
 
 ``` python
 bw_bird_view = self.perspective_transform.execute(bw_image_filtered, transform_to="top_down_view")
@@ -178,7 +176,7 @@ And here is how undistorted image to top-down view image perspective transformat
 |:---:|:---:|
 | undistorted image | result of perspective transformation |
 
-<h6>Lane lines detection</h6>
+###### Lane lines detection
 
 ``` python
 self.lane.update(bw_bird_view)
@@ -210,7 +208,7 @@ So the program [identifies start points](https://github.com/wakeful-sun/lane-fin
 #
 *Lane line detection*
 
-When initialization is done the program [invokes `update` functon](https://github.com/wakeful-sun/lane-finder/blob/0a07a8f2a9544717371ae0a6102f2d787a150e39/code/lane/lane.py#L54-L55) on each lane line instance.
+When initialization is done the program [invokes `update` function](https://github.com/wakeful-sun/lane-finder/blob/0a07a8f2a9544717371ae0a6102f2d787a150e39/code/lane/lane.py#L54-L55) on each lane line instance.
 ``` python
 self.left_line.update(bw_image)
 self.right_line.update(bw_image)
@@ -221,11 +219,80 @@ Detection result is written to [`CurvedLine`](https://github.com/wakeful-sun/lan
 self.line = self.curved_line_factory.create(bw_image, self.start_x)
 ```
 `CurvedLineFactory` uses sliding window method for lane line detection. 
-Sliding window detection algorithm itself is implemented in [`SlidingWindowLineDetector`](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/sliding_window/sliding_window_line_detector.py) class.
+Sliding window detection algorithm itself is implemented in [`SlidingWindowLineDetector`](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/sliding_window/sliding_window_line_detector.py) class and consists of next steps:
 
+  - coordinates of all white pixels are captured in [`Frame`](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/line_factory/sliding_window/sliding_window_line_detector.py#L11) class instance
+  - [windows creation](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/line_factory/sliding_window/sliding_window_line_detector.py#L15)
+  - [`DetectionArea` class instance creation](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/line_factory/sliding_window/sliding_window_line_detector.py#L20) for each window. [`DetectionArea`](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/sliding_window/detection_area.py) class holds white pixel coordinates that were inside sliding window boundaries. It also has some basic validation logic, to verify if captured pixels are likely to represent lane line
+  - next window [center shift](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/line_factory/sliding_window/sliding_window_line_detector.py#L21) if `DetectionArea` is valid
+
+When detection is finished, white points of valid areas from detection results are passed to lane [line coordinates factory](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/line_factory/sliding_window/curved_line_factory.py#L20). [`CurvedLineCoordinatesFactory`](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/curved_line_coordinates_factory.py) fits polynomial of degree 2 (quadratic function) to given white point coordinates with help of `numpy.polyfit` function. 
+[`Polynomial`](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/polynomial.py) class has functions that can fetch some useful information from quadratic function coefficients.  
+
+![alt text][gif_sliding_window_animation]
+
+Lines coordinates and quadratic function coefficents [are used for producing](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/line_factory/sliding_window/curved_line_factory.py#L22) `CurvedLine` class instance.
+
+###### Lane validation
+
+``` python
+validation_result = self.lane_validator.validate(self.lane)
+```
+Lane validation is described in [`LaneValidator`](https://github.com/wakeful-sun/lane-finder/blob/master/code/lane/lane_validator.py) class and has some global [configuration parametes](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/main.py#L29-L33)
+``` python
+lane_width_min_max = (650, 1000)
+lane_width_deviation_tolerance = 60
+allow_line_projection = True
+```
+- `lane_width_min_max` is valid lane width boundaries in pixels
+- `lane_width_deviation_tolerance` is a lane width deviation tolerance in pixels
+- `allow_line_projection` is a switch that turns on/off building lane mask out of one valid lane line when lane width is known and valid
+
+`LaneValidator` also uses assumption that lane lines are parallel.
+
+###### Validation result processing
+
+If lane considered to be invalid program puts lane into initial state, so lane initialization will be executed for the next video frame. 
+It also logs validation error and some images and sets undistorted image as lane detection pipeline result.
+``` python
+if validation_result.lane_is_lost:
+    self.lane.reset()
+    self.logger.info(validation_result, bgr_frame, bw_bird_view, texts)
+
+    result_image = undistorted_image
+```
+For valid lane program continues frame processing.
+
+###### Lane mask creation and output
+
+``` python
+lane_mask_bird_view = self.lane_mask_factory.create(self.lane, validation_result)
+lane_mask = self.perspective_transform.execute(lane_mask_bird_view, transform_to="front_view")
+
+result_image = cv2.addWeighted(lane_mask, 0.9, undistorted_image, 1, 0)
+```
+The program creates new color image of top-down view lane mask out of lane lines coordinates with help of [`LaneMaskFactory`](https://github.com/wakeful-sun/lane-finder/blob/master/code/lane/lane_mask_factory.py) and transforms it back to front view. 
+
+Then assigns concatenation of lane mask front view and undistorted image to pipeline result image.
+
+###### Vanishing point distance adjustments
+
+``` python
+perspective_distance_adjust_direction = self.lane.top_width - self.lane.width
+self.perspective_transform.adjust_vanishing_point_distance(perspective_distance_adjust_direction)
+```
+Each frame does small lane vanishing point shift to the direction that makes lane lines appear parallel in top-down view.
+Each vanishing point distance shift runs [perspective transformation coefficients recalculation](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/image_operations/perspective_transformation.py#L44-L53).
+
+###### Frame info output
+
+``` python
+FrameInfo.print(result_image, texts)
+```
+As very last step program prints some frame information with help of [`FrameInfo`](https://github.com/wakeful-sun/lane-finder/blob/master/code/frame_info.py).
 
 #
+#### Conclusions 
 
-
-##
+#
 Coming soon...

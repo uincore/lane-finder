@@ -26,11 +26,11 @@ initial_vanishing_point_distance = 300
 x_meters_per_pixel = 3.7 / 700
 # max distance will be a result of vanishing_point_distance * max_distance_coefficient multiplication
 max_distance_coefficient = 0.75
-# allow ar deny lane mask construction for known lane width and one valid lane line case
-allow_line_projection = True
 # valid lane width boundaries
 lane_width_min_max = (650, 1000)
 lane_width_deviation_tolerance = 60
+# allow ar deny lane mask construction for known lane width and one valid lane line case
+allow_line_projection = True
 # camera output image size
 w, h = 1280, 720
 
