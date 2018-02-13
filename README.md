@@ -1,6 +1,6 @@
 ## Finding Lane Boundaries on the Road
 
-The project is a software pipeline that does road lane boundaries identification on images or on video. The project uses two assumptions:
+The project is a software pipeline that does road lane boundaries identification on images or on video. The project uses some assumptions:
 - camera is mounted at the center of a car
 - camera optical axis is on car's center line
 - lane lines are parallel
@@ -11,21 +11,21 @@ The project is a software pipeline that does road lane boundaries identification
 
 [//]: # (Image References)
 
-[img_corners]: ./images/corners.png "Internal corners nx=9, ny=6"
-[img_chessboard_distorted]: ./images/chessboard_distorted.png "Barrel distortion example"
-[img_chessboard_undistorted]: ./images/chessboard_undistorted.png "Image undistortion example"
-[gif_pipeline_visualisation]: ./images/pipeline.gif "Pipeline visualisation"
-[gif_road_image_undistortion]: ./images/road_image_undistortion.gif "Road image undistortion"
-[img_visual_ray_method]: ./images/visual_ray_method.png "Visual ray method visualization"
-[img_source_points]: ./images/source_points.jpg "Source points"
-[img_lane_uml]: ./images/lane_uml.png "Lane UML"
-[gif_sliding_window_animation]: ./images/sliding_window_animation.gif "Sliding window animation"
+[img_corners]: ./output_images/corners.png "Internal corners nx=9, ny=6"
+[img_chessboard_distorted]: ./output_images/chessboard_distorted.png "Barrel distortion example"
+[img_chessboard_undistorted]: ./output_images/chessboard_undistorted.png "Image undistortion example"
+[gif_pipeline_visualisation]: ./output_images/pipeline.gif "Pipeline visualisation"
+[gif_road_image_undistortion]: ./output_images/road_image_undistortion.gif "Road image undistortion"
+[img_visual_ray_method]: ./output_images/visual_ray_method.png "Visual ray method visualization"
+[img_source_points]: ./output_images/source_points.jpg "Source points"
+[img_lane_uml]: ./output_images/lane_uml.png "Lane UML"
+[gif_sliding_window_animation]: ./output_images/sliding_window_animation.gif "Sliding window animation"
 
 Here is required steps with some description:
 
 1. Prepare set of camera calibration images for image distortion correction
 
-Camera calibration requires images of [chess board pattern](images/pattern.png) taken by the camera from different angles and distances. 
+Camera calibration requires images of [chess board pattern](./output_images/pattern.png) taken by the camera from different angles and distances. 
 
 2. Update [camera configuration](https://github.com/wakeful-sun/lane-finder/blob/105d35d85a5edc6c61776560e8a3858a6aa0f6e2/code/main.py#L35) and [camera calibration](https://github.com/wakeful-sun/lane-finder/blob/105d35d85a5edc6c61776560e8a3858a6aa0f6e2/code/main.py#L38) parameters
 
@@ -53,7 +53,7 @@ initial_vanishing_point_distance = 310
 Lane vanishing point distance is a distance from bottom of an image to straight lane perspective center on flat road in pixels. 
 It don't have to be precise value - program will adjust it during video frames processing.
 
-4. Set [meters per pixel coefficient](https://github.com/wakeful-sun/lane-finder/blob/105d35d85a5edc6c61776560e8a3858a6aa0f6e2/code/main.py#L26) that corresponds to bottom of an image for proper scailing.
+4. Set [meters per pixel coefficient](https://github.com/wakeful-sun/lane-finder/blob/105d35d85a5edc6c61776560e8a3858a6aa0f6e2/code/main.py#L26) that corresponds to bottom of an image for proper scaling.
 
 ``` python
 x_meters_per_pixel = 3.7 / 700
@@ -65,7 +65,7 @@ x_meters_per_pixel = 3.7 / 700
 ##### Camera Calibration
 
 Optical distortion is a camera lens error that deforms and bends physically straight lines and makes them appear curvy on image. 
-Camera I used also produces distorted images. Camera calibration produces distortion coefficients, that can be applied to any camera image for distortion minimisation. My camera calibration is built on top of [OpenCV](https://docs.opencv.org/3.3.1/dc/dbb/tutorial_py_calibration.html) library and consits of:
+Camera I used also produces distorted images. Camera calibration produces distortion coefficients, that can be applied to any camera image for distortion minimisation. My camera calibration is built on top of [OpenCV](https://docs.opencv.org/3.3.1/dc/dbb/tutorial_py_calibration.html) library and consists of:
 
 - collecting calibration data. For given (nx, ny) pattern I retrieve actual coordinates from each real calibration chessboard image using `cv2.findChessboardCorners` function
 ``` python
@@ -120,7 +120,7 @@ bw_image_filtered = self.threshold.execute(undistorted_image)
 ```
 Using an assumption that lane lines could be white or yellow, I created color filter for highlighting yellow and white objects on images. The filter converts image to HSV format and then applies actual color boundaries. The result is black & wight image.
 
-|<img src="./images/001_undistorted_image.png" alt="Undistorted road image" width="400px">|<img src="./images/002_bw_image_filtered.png" alt="Color threshold" width="400px">|
+|<img src="./output_images/001_undistorted_image.png" alt="Undistorted road image" width="400px">|<img src="./output_images/002_bw_image_filtered.png" alt="Color threshold" width="400px">|
 |:---:|:---:|
 | undistorted image | result of color threshold filtering |
 
@@ -153,7 +153,7 @@ And finally it gives us [source points](https://github.com/wakeful-sun/lane-find
 Now I decided not to pick up static destination points for perspective transformation, because it will produce deformed image. Equal scaling along axes will give me opportunity of visual validation of top-down view. 
 That also should simplify measurement of lane curvature, distances and car position angles. 
 
-The algorithm program uses for producing size of equally scaled along (x, y) axis top-down view image is built with help of refinement known as [**visual ray method**](https://www.handprint.com/HP/WCL/perspect2.html). 
+The program uses special algorithm for identifying shape of equally scaled along (x, y) axis top-down view image. The algorithm is built with help of refinement known as [**visual ray method**](https://www.handprint.com/HP/WCL/perspect2.html). 
 
 |![alt text][img_visual_ray_method]|
 |:---:|
@@ -172,7 +172,7 @@ DF = A'F * (2 * VP - CD) / AC - 2 * D_VP
 
 And here is how undistorted image to top-down view image perspective transformation result is look like:
 
-|<img src="./images/002_bw_image_filtered.png" alt="Front view" width="400px">|<img src="./images/003_bw_bird_view.png" alt="Top-down view" width="400px">|
+|<img src="./output_images/002_bw_image_filtered.png" alt="Front view" width="400px">|<img src="./output_images/003_bw_bird_view.png" alt="Top-down view" width="400px">|
 |:---:|:---:|
 | undistorted image | result of perspective transformation |
 
@@ -213,7 +213,7 @@ When initialization is done the program [invokes `update` function](https://gith
 self.left_line.update(bw_image)
 self.right_line.update(bw_image)
 ```
-And `LaneLine` forvars this call to the party that does actual lane line detection - to [`CurvedLineFactory`](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/sliding_window/curved_line_factory.py). 
+And `LaneLine` forwards this call to the party that does actual lane line detection - to [`CurvedLineFactory`](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/sliding_window/curved_line_factory.py). 
 Detection result is written to [`CurvedLine`](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/curved_line.py) instance.
 ```python
 self.line = self.curved_line_factory.create(bw_image, self.start_x)
@@ -231,14 +231,14 @@ When detection is finished, white points of valid areas from detection results a
 
 ![alt text][gif_sliding_window_animation]
 
-Lines coordinates and quadratic function coefficents [are used for producing](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/line_factory/sliding_window/curved_line_factory.py#L22) `CurvedLine` class instance.
+Lines coordinates and quadratic function coefficients [are used for producing](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/line_factory/sliding_window/curved_line_factory.py#L22) `CurvedLine` class instance.
 
 ###### Lane validation
 
 ``` python
 validation_result = self.lane_validator.validate(self.lane)
 ```
-Lane validation is described in [`LaneValidator`](https://github.com/wakeful-sun/lane-finder/blob/master/code/lane/lane_validator.py) class and has some global [configuration parametes](https://github.com/wakeful-sun/lane-finder/blob/c0236a3247deaa16b468e806918c7ddcf358e883/code/main.py#L29-L33)
+Lane validation is described in [`LaneValidator`](https://github.com/wakeful-sun/lane-finder/blob/master/code/lane/lane_validator.py) class and has some global [configuration parametes](https://github.com/wakeful-sun/lane-finder/blob/5b18b4127649d0b0676c1bdab0bf84a7ce04ccbd/code/main.py#L27-L31)
 ``` python
 lane_width_min_max = (650, 1000)
 lane_width_deviation_tolerance = 60
@@ -294,5 +294,50 @@ As very last step program prints some frame information with help of [`FrameInfo
 #
 #### Conclusions 
 
+*Threshold filtering problems*
+
+Current white and yellow filter is not able to identify lane lines in shadow. For example it will not highlight any points on image below. Tweaking color range might decrease the negative effect a bit.
+
+<img src="./output_images/color_filter_problematic_image.png">
+
 #
-Coming soon...
+*Lane line detection*
+
+I've tried suggested approach that takes confidently detected lane line, creates detection area mask out of it and applies it to the next frame. 
+That skips search window mechanism until lane is lost. But I got rid of it. Current sliding window implementation with only basic validation works better. 
+Basic validation allows to skip too noisy windows and windows with small amount of detected points.
+It can be an improvement point. Ideally, it should recognise line inside window. 
+Once it recognized the line we can take only one coordinate which at the middle of the line.
+And it should be extremely fast at the same time, because the program has 9 windows for each line at this moment.
+
+``` python
+class DetectionArea:
+
+    def __init__(self, start_x, line_points, window_shape):
+        percents_threshold_max = 0.2
+        pixels_threshold_min = 50
+
+        self.y, self.x = line_points
+
+        x_count = len(self.x)
+        pixels_threshold_max = window_shape[0] * window_shape[1] * percents_threshold_max
+
+        self.area_is_valid = pixels_threshold_min < x_count < pixels_threshold_max
+        
+    ...
+    
+    @property
+    def is_valid(self):
+        return self.area_is_valid
+```
+
+The program other weak place related to line detection. 
+It does not simply work for lane with small radius.
+ - lane vanishing point distance is likely to be invalid
+ - useful line information is cut by perspective transformation. We can decrease negative effect of it by picking bigger top-down view image width. So it will include some information from nearby areas.
+ - lane initialization will not work
+ - if line somehow recognized, line coordinates [factory](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/curved_line_coordinates_factory.py) calculates **x** values for each integer **y** in range from zero to image height. And for **y** closer to zero **x** goes to infinity. Or sliding window approach will include invalid points with **x** equal to image width.
+
+|<img src="./output_images/small_curvature_front_view.png" alt="Front view" width="400px">|<img src="./output_images/small_curvature_top_view.png" alt="Top-down view" width="400px">|
+|:---:|:---:|
+| front view | top-down view |
