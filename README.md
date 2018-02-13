@@ -338,7 +338,7 @@ class Lane:
 ```
 
 I also expected radius value to be a big number on straight segment of road, but it did not happen. I might have made a mistake somewhere, but don't yet know where.
-I have an idea that might give a clue to what to do - collect and visualize all the radiuses for entire video. Then compare results with the road shape.
+I have an idea that might give a clue to what to do - collect and visualize all the radius values for entire video. Then compare results with the road shape.
 
 ###### Results summary
 
@@ -388,7 +388,7 @@ class DetectionArea:
 #
 *Lane curvature radius*
 
-It seems that I made a mistake somewhere, because lane curvature radius does not show walues I expect.
+It seems that I made a mistake somewhere, because lane curvature radius does not show values I expect.
 
 #
 The program other weak place related to line detection. 
