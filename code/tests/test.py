@@ -65,6 +65,7 @@ print("Right line radius: {:.0f}m".format(lane.line_right.radius*x_meters_per_pi
 mask = Drawing.create_mask_image(bw_frame.shape, lane.line_left.coordinates, lane.line_right.coordinates, 255)
 line_points = mask.nonzero()
 avg_line, coefficients = CurvedLineCoordinatesFactory.create(line_points, bw_frame.shape[0])
+
 y0 = 1600
 x0 = avg_line[y0][0]
 radius = Polynomial.radius(coefficients, y0)
@@ -77,7 +78,7 @@ rgb_frame = convert(bgr_frame)
 plt.imshow(rgb_frame)
 
 x2, y2 = avg_line.T
-plt.plot(x2, y2, "fuchsia")
+plt.plot(x2, y2, "b")
 
 tangent_fn = Polynomial.get_tangent_fn(coefficients, x0, y0)
 pt1y, pt2y = 10, 1600
@@ -90,6 +91,7 @@ pn1x = normal_fn(pn1y)
 pn2x = normal_fn(pn2y)
 
 cx1, cy1 = Polynomial.center(coefficients, x0, y0, radius)
+plt.plot(cx1, cy1, "ro")
 plt.plot([x0, cx1], [y0, cy1], "b-")
 
 plt.plot([pt1x, pt2x], [pt1y, pt2y], "g-")

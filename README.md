@@ -291,6 +291,61 @@ FrameInfo.print(result_image, texts)
 ```
 As very last step program prints some frame information with help of [`FrameInfo`](https://github.com/wakeful-sun/lane-finder/blob/master/code/frame_info.py).
 
+Lane curvature radius calculation is requested in radius property of `CurvedLine` class and uses polynomial coefficient that were by `numpy.polyfit` function. 
+``` python
+class CurvedLine:
+    ...
+
+    @property
+    def radius(self):
+        if self.is_valid:
+            y = len(self.line_coordinates)
+            return Polynomial.radius(self.polynomial_coefficients, y)
+
+        return 0
+```
+I picked **y0** point.
+And visualized some quadratic function features from its coefficients:
+- radius center (red point)
+- line from radius center to the **y0** point (blue line)
+- normal line at the **y0** point (red line) 
+- tangent line at the **y0** point (green line) 
+- quadratic function for lane line itself (curved blue line)
+
+<img src="./output_images/quadratic_function_features.png">
+
+Everything seems to look fine, but not on the video. 
+At first it was jumping so fast and it was not possible to get what is actual lane radius at any moment.
+To reduce this effect I added `deque` container with limit of 20 items, put values there and calculate mean value for the output radius.
+``` python
+class Lane:
+
+    def __init__(self, curved_line_factory, ground_line_meters_per_pixel):
+        ...
+        self.radius_cache = deque([], maxlen=20)
+    ...
+
+    def update(self, bw_image):
+        ...
+        self.lane_radius = self._get_lane_radius(self.left_line, self.right_line)
+        self.radius_cache.append(self.lane_radius)
+    ...
+
+    @property
+    def radius_m(self):
+        return np.mean(self.radius_cache) * self.meters_per_pixel
+    ...
+```
+
+I also expected radius value to be a big number on straight segment of road, but it did not happen. I might have made a mistake somewhere, but don't yet know where.
+I have an idea that might give a clue to what to do - collect and visualize all the radiuses for entire video. Then compare results with the road shape.
+
+###### Results summary
+
+ - all code is in `./code/` directory
+ - example output images are in `./output_images/` directory
+ - output video files are in `./output_videos/` directory
+
 #
 #### Conclusions 
 
@@ -330,13 +385,19 @@ class DetectionArea:
     def is_valid(self):
         return self.area_is_valid
 ```
+#
+*Lane curvature radius*
 
+It seems that I made a mistake somewhere, because lane curvature radius does not show walues I expect.
+
+#
 The program other weak place related to line detection. 
-It does not simply work for lane with small radius.
- - lane vanishing point distance is likely to be invalid
- - useful line information is cut by perspective transformation. We can decrease negative effect of it by picking bigger top-down view image width. So it will include some information from nearby areas.
- - lane initialization will not work
- - if line somehow recognized, line coordinates [factory](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/curved_line_coordinates_factory.py) calculates **x** values for each integer **y** in range from zero to image height. And for **y** closer to zero **x** goes to infinity. Or sliding window approach will include invalid points with **x** equal to image width.
+ - It might consider lane as invalid when car starts bouncing up and down on road due to high lane width deviation.
+ - It does not simply work for lane with small radius.
+   - lane vanishing point distance is likely to be invalid
+   - useful line information is cut by perspective transformation. We can decrease negative effect of it by picking bigger top-down view image width. So it will include some information from nearby areas.
+   - lane initialization will not work
+   - if line somehow recognized, line coordinates [factory](https://github.com/wakeful-sun/lane-finder/blob/master/code/line_factory/curved_line_coordinates_factory.py) calculates **x** values for each integer **y** in range from zero to image height. And for **y** closer to zero **x** goes to infinity. Or sliding window approach will include invalid points with **x** equal to image width.
 
 |<img src="./output_images/small_curvature_front_view.png" alt="Front view" width="400px">|<img src="./output_images/small_curvature_top_view.png" alt="Top-down view" width="400px">|
 |:---:|:---:|

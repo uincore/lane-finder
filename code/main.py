@@ -22,13 +22,13 @@ video1 = "../input/challenge_video.mp4"
 video2 = "../input/harder_challenge_video.mp4"
 
 # distance from image bottom to lane lines crossing in pixels, depends on camera position
-initial_vanishing_point_distance = 300
+initial_vanishing_point_distance = 285
 x_meters_per_pixel = 3.7 / 700
 # max distance will be a result of vanishing_point_distance * max_distance_coefficient multiplication
-max_distance_coefficient = 0.75
+max_distance_coefficient = 0.77
 # valid lane width boundaries
 lane_width_min_max = (650, 1000)
-lane_width_deviation_tolerance = 60
+lane_width_deviation_tolerance = 50
 # allow ar deny lane mask construction for known lane width and one valid lane line case
 allow_line_projection = True
 # camera output image size

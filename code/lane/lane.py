@@ -17,7 +17,7 @@ class Lane:
         self.lane_radius = 0
         self.curved_line_factory = curved_line_factory
         self.meters_per_pixel = ground_line_meters_per_pixel
-        self.radius_cache = deque([], maxlen=25)
+        self.radius_cache = deque([], maxlen=20)
 
         self.lane_image = None
 
@@ -43,7 +43,7 @@ class Lane:
 
     @property
     def radius_m(self):
-        return np.average(self.radius_cache) * self.meters_per_pixel
+        return np.mean(self.radius_cache) * self.meters_per_pixel
 
     def update(self, bw_image):
         self.lane_image = bw_image

@@ -19,7 +19,7 @@ class CurvedLine:
     @property
     def radius(self):
         if self.is_valid:
-            y = self.line_coordinates[-1][1]
+            y = len(self.line_coordinates)
             return Polynomial.radius(self.polynomial_coefficients, y)
 
         return 0
